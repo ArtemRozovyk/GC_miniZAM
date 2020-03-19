@@ -20,4 +20,4 @@ add_executable(GC_miniZAM
         minizam-full/src/parser.c
         minizam-full/src/parser.h
         minizam-full/src/primitives.c
-        minizam-full/src/primitives.h)
+        minizam-full/src/primitives.h minizam-full/src/gc.c minizam-full/src/gc.h)
