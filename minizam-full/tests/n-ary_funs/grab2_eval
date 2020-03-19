@@ -1,0 +1,10 @@
+    BRANCH L3           -> pc=14 extr_args=0 accu=0 stack=[] env=<>
+L3:	CLOSURE L2, 0       -> pc=15 extr_args=0 accu={L2, <>} stack=[] env=<>
+    PUSH                -> pc=16 extr_args=0 accu={L2, <>} stack=[{L2, <>}] env=<>
+    ACC 0               -> pc=17 extr_args=0 accu={L2, <>} stack=[{L2, <>}] env=<>
+    CLOSURE L1, 1       -> pc=18 extr_args=0 accu={L1, <{L2, <>}>} stack=[{L2, <>}] env=<>
+    PUSH                -> pc=19 extr_args=0 accu={L1, <{L2, <>}>} stack=[{L1, <{L2, <>}>}, {L2, <>}] env=<>
+    CONST 5             -> pc=20 extr_args=0 accu=5 stack=[{L1, <{L2, <>}>}, {L2, <>}] env=<>
+    PUSH                -> pc=21 extr_args=0 accu=5 stack=[5, {L1, <{L2, <>}>}, {L2, <>}] env=<>
+    ACC 1               -> pc=22 extr_args=0 accu={L1, <{L2, <>}>} stack=[5, {L1, <{L2, <>}>}, {L2, <>}] env=<>
+    APPLY 1             -> pc=1 extr_args=0 accu={L1, <{L2, <>}>} stack=[5, {L1, <{L2, <>}>}, {L2, <>}] env=<{L2, <>}>

@@ -1,0 +1,26 @@
+	BRANCH L3           -> pc=15 extr_args=0 accu=0 stack=[] env=<>
+L3:	CLOSURE L2, 0       -> pc=16 extr_args=0 accu={L2,<>} stack=[] env=<>
+    PUSH                -> pc=17 extr_args=0 accu={L2,<>} stack=[{L2,<>}] env=<>
+    ACC 0               -> pc=18 extr_args=0 accu={L2,<>} stack=[{L2,<>}] env=<>
+    CLOSURE L1, 1       -> pc=19 extr_args=0 accu={L1, <{L2,<>}>} stack=[{L2,<>}] env=<>
+    PUSH                -> pc=20 extr_args=0 accu={L1, <{L2,<>}>} stack=[{L1, <{L2,<>}>}, {L2,<>}] env=<>
+    CONST 4             -> pc=21 extr_args=0 accu=4 stack=[{L1, <{L2,<>}>}, {L2,<>}] env=<>
+	PUSH                -> pc=22 extr_args=0 accu=4 stack=[4, {L1, <{L2,<>}>}, {L2,<>}] env=<>
+	CONST 3             -> pc=23 extr_args=0 accu=3 stack=[4, {L1, <{L2,<>}>}, {L2,<>}] env=<>
+	PUSH                -> pc=24 extr_args=0 accu=3 stack=[3, 4, {L1, <{L2,<>}>}, {L2,<>}] env=<>
+    ACC 2               -> pc=25 extr_args=0 accu={L1, <{L2,<>}>} stack=[3, 4, {L1, <{L2,<>}>}, {L2,<>}] env=<>
+    APPLY 2             -> pc=1 extr_args=1 accu={L1, <{L2,<>}>} stack=[3, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<{L2,<>}>
+L1:	ACC 0               -> pc=2 extr_args=1 accu=3 stack=[3, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<{L2,<>}>
+    PUSH                -> pc=3 extr_args=1 accu=3 stack=[3, 3, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<{L2,<>}>
+    CONST 1             -> pc=4 extr_args=1 accu=1 stack=[3, 3, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<{L2,<>}>
+    PRIM +              -> pc=5 extr_args=1 accu=4 stack=[3, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<{L2,<>}>
+    PUSH                -> pc=6 extr_args=1 accu=4 stack=[4, 3, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<{L2,<>}>
+    ENVACC 1            -> pc=7 extr_args=1 accu={L2,<>} stack=[4, 3, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<{L2,<>}>
+    APTERM 1 2          -> pc=9 extr_args=1 accu={L2,<>} stack=[4, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<>
+L2:	GRAB 1              -> pc=10 extr_args=0 accu={L2,<>} stack=[4, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<>
+    ACC 1               -> pc=10 extr_args=0 accu=4 stack=[4, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<>
+    PUSH                -> pc=11 extr_args=0 accu=4 stack=[4, 4, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<>
+    ACC 1               -> pc=12 extr_args=0 accu=4 stack=[4, 4, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<>
+    PRIM +              -> pc=13 extr_args=0 accu=8 stack=[4, 4, 0, 26, <>, {L1, <{L2,<>}>}, {L2,<>}] env=<>
+    RETURN 2            -> pc=27 extr_args=0 accu=8 stack=[{L1, <{L2,<>}>}, {L2,<>}] env=<>
+    STOP            
