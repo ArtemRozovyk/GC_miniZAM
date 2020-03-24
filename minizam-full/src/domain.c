@@ -19,6 +19,13 @@ void caml_init_domain() {
   Caml_state->current_semispace=0;
 }
 
+void free_domain(){
+    free(Caml_state->stack);
+    free_semispace(Caml_state->space[0]);
+    free_semispace(Caml_state->space[1]);
+    free(Caml_state);
+}
+
 semi_space new_semispace(size_t size){
     semi_space space = malloc(sizeof(struct _semi_space));
     space->tas = malloc(sizeof(mlvalue)*size);

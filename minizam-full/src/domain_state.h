@@ -23,6 +23,7 @@ extern caml_domain_state* Caml_state;
 /* Initialisation function for |Caml_state| */
 void caml_init_domain();
 semi_space new_semispace(size_t);
+void free_domain();
 mlvalue* allocate_in_semispace(size_t);
 
 #endif

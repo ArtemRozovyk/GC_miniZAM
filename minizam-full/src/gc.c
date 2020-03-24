@@ -17,6 +17,19 @@ void clear_semispace(semi_space space){
     space->alloc_pointer=0;
 }
 
+void change_capacities(semi_space from_space, semi_space to_space){
+    if(to_space->alloc_pointer*2>=to_space->capcity)
+    {
+        from_space->capcity *= 1.5;
+        to_space->capcity *= 1.5;
+    }
+    else
+    {
+        from_space->capcity /= 1.5;
+        to_space->capcity /= 1.5;
+    }
+}
+
 mlvalue copy_to_space(semi_space to_space, mlvalue addr){
     if(Tag(addr)==FWD_PTR_T)
     {
@@ -26,8 +39,15 @@ mlvalue copy_to_space(semi_space to_space, mlvalue addr){
     {
         mlvalue* block_to_space = to_space->tas + to_space->alloc_pointer;
         size_t pes = Size(addr)+1;
-        to_space->alloc_pointer += Size(addr)+1;
-
+        if(Size(addr)==0)
+        {
+            to_space->alloc_pointer += 2;
+        }
+        else
+        {
+            to_space->alloc_pointer += Size(addr)+1;
+        }
+        int64_t aos = Field0(addr);
         block_to_space[0] = Hd_val(addr);
         for (size_t  i = 0; i < Size(addr); i++) {
             block_to_space[i+1] = Field(addr,i);
@@ -49,7 +69,6 @@ mlvalue copy_to_space(semi_space to_space, mlvalue addr){
 void start_gc(){
     semi_space from_space = Caml_state->space[Caml_state->current_semispace];
     semi_space to_space = Caml_state->space[(Caml_state->current_semispace + 1) %2];
-
     /* Copie de  racine eventuelle dans accu */
     if(Is_block(accu))
     {
@@ -67,6 +86,8 @@ void start_gc(){
         }
     }
 
+    change_capacities(from_space,to_space);
     clear_semispace(from_space);
     Caml_state->current_semispace = (Caml_state->current_semispace + 1) % 2;
 }
+

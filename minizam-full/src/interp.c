@@ -9,7 +9,7 @@
 #include "instruct.h"
 #include "alloc.h"
 #include "primitives.h"
-
+#include "gc.h"
 
 /* Helpers to manipulate the stack. Note that |sp| always point to the
    first empty element in the stack; hence the prefix -- in POP, but
@@ -305,7 +305,8 @@ mlvalue caml_interprete(code_t* prog) {
     }
 
     case STOP:
-      return accu;
+        free_domain();
+        return accu;
 
     default:
       fprintf(stderr, "Unkown bytecode: %lu at offset %d\n", prog[pc-1], pc-1);

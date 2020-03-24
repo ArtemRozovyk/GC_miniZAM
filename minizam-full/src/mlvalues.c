@@ -22,7 +22,7 @@ mlvalue make_block(size_t size, tag_t tag) {
 }
 
 mlvalue make_closure(uint64_t addr, mlvalue env) {
-  mlvalue* block = caml_alloc(3* sizeof(mlvalue));
+  mlvalue* block = allocate_in_semispace(3);
   block[0] = Make_header(2, WHITE, CLOSURE_T);
   block[1] = Val_long(addr);
   block[2] = env;
