@@ -9,6 +9,7 @@
 #include "instruct.h"
 #include "alloc.h"
 #include "primitives.h"
+#include "gc.h"
 
 
 /* Helpers to manipulate the stack. Note that |sp| always point to the
@@ -229,6 +230,9 @@ mlvalue caml_interprete(code_t* prog) {
         }
       }
       accu = blk;
+        if(Caml_state->big_list_size==350){
+            mark(stack,sp);
+        }
       break;
     }
 

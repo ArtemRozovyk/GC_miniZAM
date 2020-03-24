@@ -36,7 +36,6 @@ bits  63    10 9     8 7   0
 #define Size(v) Size_hd(Hd_val(v))
 #define Color(v) Color_hd(Hd_val(v))
 #define Tag(v)  Tag_hd(Hd_val(v))
-
 #define WHITE 0
 #define GRAY 1
 #define BLACK 2
