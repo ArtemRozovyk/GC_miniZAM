@@ -1,12 +1,13 @@
 #ifndef _MLVALUES_H
 #define _MLVALUES_H
 
+#include <stdio.h>
 #include <stdint.h>
 
 typedef int64_t mlvalue;
 typedef uint64_t header_t;
 typedef enum { WHITE, GRAY, BLACK } color_t;
-typedef enum { ENV_T, CLOSURE_T, BLOCK_T } tag_t;
+typedef enum { ENV_T, CLOSURE_T, BLOCK_T, FWD_PTR_T} tag_t;
 
 /* If a mlvalue ends with 1, it's an integer, otherwise it's a pointer. */
 #define Is_long(v)  (((v) & 1) != 0)

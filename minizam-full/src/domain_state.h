@@ -5,8 +5,8 @@
 
 typedef struct _semi_space{
     mlvalue* tas;
-    int capcity;
-    int alloc_pointer;
+    uint64_t capcity;
+    uint64_t alloc_pointer;
 } *semi_space;
 
 typedef struct _caml_domain_state {
@@ -22,8 +22,7 @@ extern caml_domain_state* Caml_state;
 
 /* Initialisation function for |Caml_state| */
 void caml_init_domain();
-semi_space new_semispace(int);
-void free_semispace(semi_space);
-mlvalue* allocate_in_semispace(int);
+semi_space new_semispace(size_t);
+mlvalue* allocate_in_semispace(size_t);
 
 #endif

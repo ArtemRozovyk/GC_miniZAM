@@ -8,8 +8,6 @@
 #include "mlvalues.h"
 #include "domain_state.h"
 
-extern caml_domain_state state;
-extern mlvalue accu;
-extern mlvalue env;
+void start_gc();
 
 #endif //GC_MINIZAM_GC_H

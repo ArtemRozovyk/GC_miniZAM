@@ -19,6 +19,7 @@
 
 mlvalue accu;
 mlvalue env;
+unsigned int sp;
 
 mlvalue caml_interprete(code_t* prog) {
 
@@ -26,7 +27,7 @@ mlvalue caml_interprete(code_t* prog) {
   accu = Val_long(0);
   env = Make_empty_env();
 
-  register unsigned int sp = 0;
+  sp = 0;
   register unsigned int pc = 0;
   unsigned int extra_args = 0;
   unsigned int trap_sp = 0;

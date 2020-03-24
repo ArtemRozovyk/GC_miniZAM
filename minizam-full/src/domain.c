@@ -4,7 +4,7 @@
 #include "domain_state.h"
 #include "config.h"
 #include "mlvalues.h"
-
+#include "gc.h"
 
 caml_domain_state* Caml_state;
 
@@ -19,7 +19,7 @@ void caml_init_domain() {
   Caml_state->current_semispace=0;
 }
 
-semi_space new_semispace(int size){
+semi_space new_semispace(size_t size){
     semi_space space = malloc(sizeof(struct _semi_space));
     space->tas = malloc(sizeof(mlvalue)*size);
     space->capcity = size;
@@ -27,23 +27,16 @@ semi_space new_semispace(int size){
     return space;
 }
 
-void clear_semispace(semi_space space){
-    free(space->tas);
-    space->tas = malloc(sizeof(mlvalue)*Semi_space_size);
-    space->alloc_pointer=0;
-}
-
 void free_semispace(semi_space space){
     free(space->tas);
     free(space);
 }
 
-mlvalue* allocate_in_semispace(int size){
+mlvalue* allocate_in_semispace(size_t size){
     semi_space current_semispace = Caml_state->space[Caml_state->current_semispace];
-    int start_alloc_pointer = current_semispace->alloc_pointer;
+    uint64_t start_alloc_pointer = current_semispace->alloc_pointer;
     if(start_alloc_pointer + size >= current_semispace->capcity){
-        //TODO:GC
-        Caml_state->current_semispace = (Caml_state->current_semispace + 1) % 2;
+        start_gc();
         current_semispace = Caml_state->space[Caml_state->current_semispace];
         start_alloc_pointer = current_semispace->alloc_pointer;
     }

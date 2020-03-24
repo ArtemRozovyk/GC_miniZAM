@@ -2,15 +2,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "mlvalues.h"
 #include "alloc.h"
+#include "mlvalues.h"
 #include "instruct.h"
 #include "primitives.h"
 #include "domain_state.h"
 
 
 mlvalue make_empty_block(tag_t tag) {
-  mlvalue* block = allocate_in_semispace(1);
+  mlvalue* block = allocate_in_semispace(2);
   block[0] = Make_header(0, WHITE, tag);
   return Val_ptr(block+1);
 }
@@ -22,7 +22,7 @@ mlvalue make_block(size_t size, tag_t tag) {
 }
 
 mlvalue make_closure(uint64_t addr, mlvalue env) {
-  mlvalue* block = allocate_in_semispace(3);
+  mlvalue* block = caml_alloc(3* sizeof(mlvalue));
   block[0] = Make_header(2, WHITE, CLOSURE_T);
   block[1] = Val_long(addr);
   block[2] = env;
