@@ -9,9 +9,9 @@
 #include "domain_state.h"
 
 mlvalue make_empty_block(tag_t tag) {
-  mlvalue* block = caml_alloc(sizeof(mlvalue));
+  mlvalue* block = caml_alloc(2*sizeof(mlvalue));
   block[0] = Make_header(0, WHITE, tag);
-    Caml_state->big_list=pushHead(&block[1],Caml_state->big_list);
+  Caml_state->big_list=pushHead(block+1,Caml_state->big_list);
   Caml_state->big_list_size++;
   return Val_ptr(block+1);
 }
@@ -19,7 +19,7 @@ mlvalue make_empty_block(tag_t tag) {
 mlvalue make_block(size_t size, tag_t tag) {
   mlvalue* block = caml_alloc((size+1) * sizeof(mlvalue));
   block[0] = Make_header(size, WHITE, tag);
-  Caml_state->big_list=pushHead(&block[1],Caml_state->big_list);
+  Caml_state->big_list=pushHead(block+1,Caml_state->big_list);
   Caml_state->big_list_size++;
 
   return Val_ptr(block+1);
@@ -30,7 +30,7 @@ mlvalue make_closure(uint64_t addr, mlvalue env) {
   block[0] = Make_header(2, WHITE, CLOSURE_T);
   block[1] = Val_long(addr);
   block[2] = env;
-  Caml_state->big_list=pushHead(&block[1],Caml_state->big_list);
+  Caml_state->big_list=pushHead(block+1,Caml_state->big_list);
   Caml_state->big_list_size++;
   return Val_ptr(block+1);
 }

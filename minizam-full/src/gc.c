@@ -31,6 +31,8 @@ void traverse_greys(ml_list greys) {
     //show(nw_greys);
     //printf("\n");
     traverse_greys(nw_greys);
+    release(nw_greys);
+    free(nw_greys);
 
 
 }
@@ -48,6 +50,8 @@ void mark(mlvalue *stack, unsigned int curr_stack_sz) {
     }
     traverse_greys(greys);
     show(greys);
+    release(greys);
+    free(greys);
 }
 
 ml_list sweep(ml_list lst) {
@@ -57,6 +61,11 @@ ml_list sweep(ml_list lst) {
     while (lst != NULL && Color(lst->val) == WHITE) {
         ml_list tofree = lst;
         lst = lst->next;
+        //free(tofree->val-1)
+
+        mlvalue k=tofree->val;
+        free((mlvalue * ) k-1);
+
         free(tofree);
     }
 
@@ -71,7 +80,10 @@ ml_list sweep(ml_list lst) {
             if(clr == WHITE ){
                 ml_list tofree = pred->next;
                 pred->next = pred->next->next;
-                free(Ptr_val(tofree->val)-1);
+                free(Ptr_val(*tofree->val)-1);
+
+                mlvalue k=tofree->val;
+                free((mlvalue * ) k-1);
                 free(tofree);
             }
             pred = pred->next;
