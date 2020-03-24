@@ -232,6 +232,12 @@ mlvalue caml_interprete(code_t* prog) {
       accu = blk;
         if(Caml_state->big_list_size==350){
             mark(stack,sp);
+            printf("\n");
+            show_colors(Caml_state->big_list);
+            Caml_state->big_list=sweep(Caml_state->big_list);
+            printf(" nl \n");
+            show_colors(Caml_state->big_list);
+
         }
       break;
     }

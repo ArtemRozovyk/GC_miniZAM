@@ -22,7 +22,7 @@ ml_list pushHead(mlvalue * i,ml_list fl);
 void show (ml_list fl);
 void release(ml_list fl);
 
-
+void show_colors(ml_list fl);
 
 
 #endif //GC_MINIZAM_LISTS_H

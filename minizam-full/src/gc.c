@@ -54,7 +54,7 @@ ml_list sweep(ml_list lst) {
     if (lst->val == NULL) {
         return lst;
     }
-    while (lst != NULL && Color(*lst->val) == WHITE) {
+    while (lst != NULL && Color(lst->val) == WHITE) {
         ml_list tofree = lst;
         lst = lst->next;
         free(tofree);
@@ -63,12 +63,20 @@ ml_list sweep(ml_list lst) {
 
     ml_list pred = lst;
     while (pred != NULL && pred->next != NULL) {
-        while (pred->next != NULL && Color(*lst->next->val) == WHITE) {
-            ml_list tofree = pred->next;
-            pred->next = pred->next->next;
-            free(tofree);
+
+
+
+        while (pred->next != NULL  ) {
+            color_t clr = Color(pred->next->val) ;
+            if(clr == WHITE ){
+                ml_list tofree = pred->next;
+                pred->next = pred->next->next;
+                free(Ptr_val(tofree->val)-1);
+                free(tofree);
+            }
+            pred = pred->next;
+
         }
-        pred = pred->next;
     }
     return lst;
 }
