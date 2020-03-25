@@ -80,8 +80,6 @@ ml_list sweep(ml_list lst) {
             if(clr == WHITE ){
                 ml_list tofree = pred->next;
                 pred->next = pred->next->next;
-                free(Ptr_val(*tofree->val)-1);
-
                 mlvalue k=tofree->val;
                 free((mlvalue * ) k-1);
                 free(tofree);
