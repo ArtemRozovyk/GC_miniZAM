@@ -13,6 +13,8 @@ typedef struct _caml_domain_state {
   int big_list_size;
   ml_list page_list;
   ml_list free_list;
+  long nballoc;
+  long nbfree;
 } caml_domain_state;
 
 /* The global state */

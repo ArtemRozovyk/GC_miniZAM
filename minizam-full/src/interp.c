@@ -32,15 +32,7 @@ mlvalue caml_interprete(code_t* prog) {
   unsigned int trap_sp = 0;
     int done=0;
   while(1) {
-      if(Caml_state->big_list_size==35&&!done){
-          mark(stack,sp);
-          printf("\n");
-          show_colors(Caml_state->big_list);
-          Caml_state->big_list=sweep(Caml_state->big_list);
-          printf(" nl \n");
-          show_colors(Caml_state->big_list);
-            done=1;
-      }
+
 
 #ifdef DEBUG
       printf("pc=%d  accu=%s  sp=%d extra_args=%d trap_sp=%d stack=[",
@@ -316,13 +308,8 @@ mlvalue caml_interprete(code_t* prog) {
     }
 
     case STOP:
-            mark(stack,sp);
-            //printf("\n");
-            //show_colors(Caml_state->big_list);
-            Caml_state->big_list=sweep(Caml_state->big_list);
-            //printf(" nl \n");
-            //show_colors(Caml_state->big_list);
-            done=1;
+        Caml_state->big_list=sweep(Caml_state->big_list);
+        done=1;
       return accu;
 
     default:
@@ -330,5 +317,8 @@ mlvalue caml_interprete(code_t* prog) {
       exit(EXIT_FAILURE);
     }
   }
+
+
+
 
 }

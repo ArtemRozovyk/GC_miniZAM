@@ -29,7 +29,7 @@ ml_list pushHead(mlvalue *i, ml_list fl) {
 void show(ml_list fl) {
     ml_list tmp = fl;
     while (tmp && tmp->val) {
-        printf("%p - ", tmp->val);
+        //printf("%p - ", tmp->val);
         tmp = tmp->next;
     }
 }

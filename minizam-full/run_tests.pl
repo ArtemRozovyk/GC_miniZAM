@@ -57,16 +57,13 @@ my %tests = (
     );
 
 # Recompiling the vm
-system("cd src && make clean && make");
-say "Compilation OK.\n\nRunning tests...\n";
-
 
 # Running the tests
 my ($err_count, $total) = (0, 0);
 
 for my $test (sort keys %tests) {
     my $filename = "tests/$test.txt";
-    my $res = `./src/minizam $filename -res 2>&1`;
+    my $res = `./src/GC_miniZAM $filename -res 2>&1`;
     chomp $res;
     if ($res ne $tests{$test}) {
         $err_count++;
