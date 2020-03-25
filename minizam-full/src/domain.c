@@ -19,6 +19,11 @@ void caml_init_domain() {
   Caml_state->current_semispace=0;
 }
 
+void free_semispace(semi_space space){
+    free(space->tas);
+    free(space);
+}
+
 void free_domain(){
     free(Caml_state->stack);
     free_semispace(Caml_state->space[0]);
@@ -32,11 +37,6 @@ semi_space new_semispace(size_t size){
     space->capcity = size;
     space->alloc_pointer = 0;
     return space;
-}
-
-void free_semispace(semi_space space){
-    free(space->tas);
-    free(space);
 }
 
 mlvalue* allocate_in_semispace(size_t size){

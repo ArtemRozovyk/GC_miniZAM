@@ -11,6 +11,6 @@
    the heap; probably causing something to go wrong somewhere. */
 /* TODO: auto-growing stack, or throw stack overflow when needed. */
 #define Stack_size (8 * MB)
-#define Semi_space_size (32 * KB)
+#define Semi_space_size 16
 
 #endif

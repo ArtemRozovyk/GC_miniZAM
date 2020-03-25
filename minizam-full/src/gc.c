@@ -13,12 +13,17 @@ extern unsigned int sp;
 
 void clear_semispace(semi_space space){
     free(space->tas);
-    space->tas = malloc(sizeof(mlvalue)*Semi_space_size);
     space->alloc_pointer=0;
 }
 
+
+void realoc_semispaces(semi_space from_space, semi_space to_space){
+    from_space->tas = malloc(sizeof(mlvalue) * from_space->capcity);
+    to_space->tas = realloc(to_space->tas, sizeof(mlvalue) * to_space->capcity);
+}
+
 void change_capacities(semi_space from_space, semi_space to_space){
-    if(to_space->alloc_pointer*2>=to_space->capcity)
+    if(to_space->alloc_pointer*2 >= to_space->capcity)
     {
         from_space->capcity *= 1.5;
         to_space->capcity *= 1.5;
@@ -38,7 +43,6 @@ mlvalue copy_to_space(semi_space to_space, mlvalue addr){
     else
     {
         mlvalue* block_to_space = to_space->tas + to_space->alloc_pointer;
-        size_t pes = Size(addr)+1;
         if(Size(addr)==0)
         {
             to_space->alloc_pointer += 2;
@@ -47,7 +51,6 @@ mlvalue copy_to_space(semi_space to_space, mlvalue addr){
         {
             to_space->alloc_pointer += Size(addr)+1;
         }
-        int64_t aos = Field0(addr);
         block_to_space[0] = Hd_val(addr);
         for (size_t  i = 0; i < Size(addr); i++) {
             block_to_space[i+1] = Field(addr,i);
@@ -66,6 +69,7 @@ mlvalue copy_to_space(semi_space to_space, mlvalue addr){
     }
 }
 
+
 void start_gc(){
     semi_space from_space = Caml_state->space[Caml_state->current_semispace];
     semi_space to_space = Caml_state->space[(Caml_state->current_semispace + 1) %2];
@@ -79,15 +83,18 @@ void start_gc(){
     env = copy_to_space(to_space, env);
 
     /* Copie des racines dans stack */
-    for (size_t i = sp-1 ; i != 0; i--) {
+    int i = sp-1;
+    while (i >= 0) {
         if(Is_block(Caml_state->stack[i]))
         {
             Caml_state->stack[i] = copy_to_space(to_space, Caml_state->stack[i]);
         }
+        i--;
     }
 
     change_capacities(from_space,to_space);
     clear_semispace(from_space);
+    realoc_semispaces(from_space, to_space);
     Caml_state->current_semispace = (Caml_state->current_semispace + 1) % 2;
 }
 

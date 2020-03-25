@@ -31,7 +31,7 @@ mlvalue caml_interprete(code_t* prog) {
   register unsigned int pc = 0;
   unsigned int extra_args = 0;
   unsigned int trap_sp = 0;
-
+  int tour_de_boucleAAAAAAAA=0;
   while(1) {
 
 #ifdef DEBUG
@@ -47,6 +47,11 @@ mlvalue caml_interprete(code_t* prog) {
       print_instr(prog, pc);
 #endif
 
+    tour_de_boucleAAAAAAAA++;
+    if (tour_de_boucleAAAAAAAA==166464)
+    {
+        printf("");
+    }
     switch (prog[pc++]) {
     case CONST:
       accu = Val_long(prog[pc++]);
@@ -113,6 +118,7 @@ mlvalue caml_interprete(code_t* prog) {
         PUSH_STACK(tmp[i]);
       }
       free(tmp);
+      mlvalue x =Field0(accu);
       pc = Addr_closure(accu);
       env = Env_closure(accu);
       extra_args = n-1;
@@ -305,7 +311,6 @@ mlvalue caml_interprete(code_t* prog) {
     }
 
     case STOP:
-        free_domain();
         return accu;
 
     default:
