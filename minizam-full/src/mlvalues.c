@@ -10,7 +10,6 @@
 
 mlvalue make_empty_block(tag_t tag) {
   mlvalue* block = caml_alloc(2*sizeof(mlvalue));
-  Caml_state->nballoc++;
   block[0] = Make_header(0, WHITE, tag);
   Caml_state->big_list=pushHead(block+1,Caml_state->big_list);
   Caml_state->big_list_size++;
@@ -19,7 +18,6 @@ mlvalue make_empty_block(tag_t tag) {
 
 mlvalue make_block(size_t size, tag_t tag) {
   mlvalue* block = caml_alloc((size+1) * sizeof(mlvalue));
-  Caml_state->nballoc++;
   block[0] = Make_header(size, WHITE, tag);
   Caml_state->big_list=pushHead(block+1,Caml_state->big_list);
   Caml_state->big_list_size++;
@@ -29,7 +27,6 @@ mlvalue make_block(size_t size, tag_t tag) {
 
 mlvalue make_closure(uint64_t addr, mlvalue env) {
   mlvalue* block = caml_alloc(3 * sizeof(mlvalue));
-  Caml_state->nballoc++;
   block[0] = Make_header(2, WHITE, CLOSURE_T);
   block[1] = Val_long(addr);
   block[2] = env;

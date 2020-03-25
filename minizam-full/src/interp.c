@@ -308,8 +308,13 @@ mlvalue caml_interprete(code_t* prog) {
     }
 
     case STOP:
-        Caml_state->big_list=sweep(Caml_state->big_list);
-        done=1;
+
+            //printf("\n");
+            //show_colors(Caml_state->big_list);
+            Caml_state->big_list=sweep(Caml_state->big_list);
+            //printf(" nl \n");
+            //show_colors(Caml_state->big_list);
+            done=1;
       return accu;
 
     default:
@@ -317,8 +322,5 @@ mlvalue caml_interprete(code_t* prog) {
       exit(EXIT_FAILURE);
     }
   }
-
-
-
 
 }

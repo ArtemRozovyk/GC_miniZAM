@@ -20,7 +20,7 @@ mlvalue eval_file(char* filename) {
 }
 
 int main(int argc, char** argv) {
-    nbfree=0;
+
   if (argc < 2) {
     fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
     exit(EXIT_FAILURE);
@@ -33,7 +33,5 @@ int main(int argc, char** argv) {
     char* res_str = val_to_str(res);
     printf("%s\n", res_str);
     free(res_str);
-    printf("nb free %ld\n ",nbfree);
-    printf("nb alloc %ld\n ",Caml_state->nballoc);
   }
 }

@@ -23,6 +23,6 @@ void show (ml_list fl);
 void release(ml_list fl);
 
 void show_colors(ml_list fl);
- long int nbfree;
+
 
 #endif //GC_MINIZAM_LISTS_H
