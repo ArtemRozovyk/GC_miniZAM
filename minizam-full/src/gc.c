@@ -5,9 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "gc.h"
+#include "fifo.h"
+#include "domain_state.h"
 #include "config.h"
 
-extern caml_domain_state* Caml_state;
 extern mlvalue accu; 
 extern mlvalue env;
 extern unsigned int sp;
@@ -41,37 +42,50 @@ void change_capacities(semi_space from_space, semi_space to_space){
 }
 
 mlvalue copy_to_space(semi_space to_space, mlvalue addr){
-    if(Tag(addr)==FWD_PTR_T)
-    {
-        return  Field0(addr);
-    }
-    else
-    {
-        mlvalue* block_to_space = to_space->tas + to_space->alloc_pointer;
-        if(Size(addr)==0)
+    mlvalue resultat;
+    ml_fifo fifo = new_ml_fifo();
+    push_fifo(fifo, &resultat, addr);
+    mlvalue* block_to_space = to_space->tas + to_space->alloc_pointer;
+
+    while (!is_empty_fifo(fifo)) {
+        context ctx = pop_fifo(fifo);
+        if(Tag(ctx.val)==FWD_PTR_T)
         {
-            to_space->alloc_pointer += 2;
+            *(ctx.place)=Field0(ctx.val);
         }
         else
         {
-            to_space->alloc_pointer += Size(addr)+1;
-        }
-        block_to_space[0] = Hd_val(addr);
-        for (size_t  i = 0; i < Size(addr); i++) {
-            block_to_space[i+1] = Field(addr,i);
-        }
-
-        Hd_val(addr) = Val_hd(Make_header(Size(addr),Color(addr), FWD_PTR_T));
-        Field0(addr) = Val_ptr(block_to_space + 1);
-
-        for (size_t  i = 0; i < Size(addr); i++) {
-            if(Is_block(block_to_space[i+1]))
+            if(Size(ctx.val)==0)
             {
-                block_to_space[i+1] = copy_to_space(to_space, block_to_space[i+1]);
+                to_space->alloc_pointer += 2;
             }
+            else
+            {
+                to_space->alloc_pointer += Size(ctx.val)+1;
+            }
+
+            block_to_space[0] = Hd_val(ctx.val);
+            for (size_t  i = 0; i < Size(ctx.val); i++) {
+                block_to_space[i+1] = Field(ctx.val,i);
+            }
+
+            Hd_val(ctx.val) = Val_hd(Make_header(Size(ctx.val),Color(ctx.val), FWD_PTR_T));
+            Field0(ctx.val) = Val_ptr(block_to_space + 1);
+
+            for (size_t  i = 0; i < Size(ctx.val); i++) {
+                if(Is_block(block_to_space[i+1]))
+                {
+                    push_fifo(fifo, block_to_space+i+1,block_to_space[i+1]);
+                }
+            }
+
+            *(ctx.place) = block_to_space + 1;
+            block_to_space = to_space->tas + to_space->alloc_pointer;
         }
-        return Val_ptr(block_to_space + 1);
     }
+
+    free_fifo(fifo);
+    return resultat;
 }
 
 void stop_gc(){
@@ -83,32 +97,10 @@ void stop_gc(){
     realoc_semispaces(from_space, to_space);
 
     Caml_state->current_semispace = (Caml_state->current_semispace + 1) % 2;
-
-    mlvalue closApres = Caml_state->stack[0];
-    header_t headClosApres = Hd_val(closApres);
-    int64_t  codeClosApres = Long_val(Field0(closApres));
-    mlvalue  envClosApres = Field1(closApres);
-    header_t  headEnvApres = Hd_val(envClosApres);
-    int64_t  element0EnvApres = Long_val(Field0(envClosApres));
-
-    header_t envHeadOFFApres =  Hd_val(env);
-    int64_t  elt0EnvOFFApres = Long_val(Field0(env));
 }
 
 void start_gc(){
-    semi_space from_space = Caml_state->space[Caml_state->current_semispace];
     semi_space to_space = Caml_state->space[(Caml_state->current_semispace + 1) %2];
-    /* Copie de  racine eventuelle dans accu */
-
-    mlvalue closAvant = Caml_state->stack[0];
-    header_t headClosAvant = Hd_val(closAvant);
-    int64_t  codeClosAvant = Long_val(Field0(closAvant));
-    mlvalue  envClosAvant = Field1(closAvant);
-    header_t  headEnvAvant = Hd_val(envClosAvant);
-    int64_t  element0EnvAvant = Long_val(Field0(envClosAvant));
-
-    header_t envHeadOFF =  Hd_val(env);
-    int64_t  elt0EnvOFF = Long_val(Field0(env));
 
     if(Is_block(accu))
     {
@@ -117,7 +109,6 @@ void start_gc(){
 
     /* Copie de racine dans env */
     env = copy_to_space(to_space, env);
-
 
     /* Copie des racines dans stack */
     int i = sp-1;
@@ -128,14 +119,6 @@ void start_gc(){
         }
         i--;
     }
-
-    /*mlvalue closApres = Caml_state->stack[0];
-    header_t headClosApres = Hd_val(closApres);
-    int64_t  codeClosApres = Long_val(Field0(closApres));
-    mlvalue  envClosApres = Field1(closApres);
-    header_t  headEnvApres = Hd_val(envClosApres);
-    int64_t  element0EnvApres = Long_val(Field0(envClosApres));
-*/
 
     if(contextValue){
         if(Is_block(*contextValue)){
