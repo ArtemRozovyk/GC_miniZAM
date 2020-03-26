@@ -12,6 +12,8 @@ extern mlvalue accu;
 extern mlvalue env;
 extern unsigned int sp;
 
+mlvalue * contextValue = NULL;
+
 void clear_semispace(semi_space space){
     free(space->tas);
     space->alloc_pointer=0;
@@ -72,6 +74,26 @@ mlvalue copy_to_space(semi_space to_space, mlvalue addr){
     }
 }
 
+void stop_gc(){
+    semi_space from_space = Caml_state->space[Caml_state->current_semispace];
+    semi_space to_space = Caml_state->space[(Caml_state->current_semispace + 1) %2];
+    change_capacities(from_space,to_space);
+    clear_semispace(from_space);
+
+    realoc_semispaces(from_space, to_space);
+
+    Caml_state->current_semispace = (Caml_state->current_semispace + 1) % 2;
+
+    mlvalue closApres = Caml_state->stack[0];
+    header_t headClosApres = Hd_val(closApres);
+    int64_t  codeClosApres = Long_val(Field0(closApres));
+    mlvalue  envClosApres = Field1(closApres);
+    header_t  headEnvApres = Hd_val(envClosApres);
+    int64_t  element0EnvApres = Long_val(Field0(envClosApres));
+
+    header_t envHeadOFFApres =  Hd_val(env);
+    int64_t  elt0EnvOFFApres = Long_val(Field0(env));
+}
 
 void start_gc(){
     semi_space from_space = Caml_state->space[Caml_state->current_semispace];
@@ -114,22 +136,13 @@ void start_gc(){
     header_t  headEnvApres = Hd_val(envClosApres);
     int64_t  element0EnvApres = Long_val(Field0(envClosApres));
 */
-    change_capacities(from_space,to_space);
-    clear_semispace(from_space);
 
-    realoc_semispaces(from_space, to_space);
+    if(contextValue){
+        if(Is_block(*contextValue)){
+            *contextValue = copy_to_space(to_space, *contextValue);
+        }
+    }
 
-    Caml_state->current_semispace = (Caml_state->current_semispace + 1) % 2;
-
-    mlvalue closApres = Caml_state->stack[0];
-    header_t headClosApres = Hd_val(closApres);
-    int64_t  codeClosApres = Long_val(Field0(closApres));
-    mlvalue  envClosApres = Field1(closApres);
-    header_t  headEnvApres = Hd_val(envClosApres);
-    int64_t  element0EnvApres = Long_val(Field0(envClosApres));
-
-    header_t envHeadOFFApres =  Hd_val(env);
-    int64_t  elt0EnvOFFApres = Long_val(Field0(env));
-
+    stop_gc();
 }
 
