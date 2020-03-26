@@ -25,8 +25,15 @@ mlvalue make_closure(uint64_t addr, mlvalue env) {
   mlvalue* block = allocate_in_semispace(3);
   block[0] = Make_header(2, WHITE, CLOSURE_T);
   block[1] = Val_long(addr);
-  block[2] = env;
-  return Val_ptr(block+1);
+    /*header_t envHeadOFF = Hd_val(env);
+    int64_t elt0EnvOFF = Long_val(Field0(env));*/
+    if(Tag(env)== FWD_PTR_T){
+        block[2] = Field0(env);
+    }
+    else {
+        block[2] = env;
+    }
+    return Val_ptr(block+1);
 }
 
 

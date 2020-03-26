@@ -3,6 +3,7 @@
 //
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "gc.h"
 #include "config.h"
 
@@ -19,7 +20,9 @@ void clear_semispace(semi_space space){
 
 void realoc_semispaces(semi_space from_space, semi_space to_space){
     from_space->tas = malloc(sizeof(mlvalue) * from_space->capcity);
-    to_space->tas = realloc(to_space->tas, sizeof(mlvalue) * to_space->capcity);
+    mlvalue *tmp = malloc(sizeof(mlvalue) * to_space->capcity);
+    memcpy(tmp, to_space->tas, sizeof(mlvalue) * to_space->alloc_pointer);
+    to_space->tas = tmp;
 }
 
 void change_capacities(semi_space from_space, semi_space to_space){
@@ -74,6 +77,17 @@ void start_gc(){
     semi_space from_space = Caml_state->space[Caml_state->current_semispace];
     semi_space to_space = Caml_state->space[(Caml_state->current_semispace + 1) %2];
     /* Copie de  racine eventuelle dans accu */
+
+    mlvalue closAvant = Caml_state->stack[0];
+    header_t headClosAvant = Hd_val(closAvant);
+    int64_t  codeClosAvant = Long_val(Field0(closAvant));
+    mlvalue  envClosAvant = Field1(closAvant);
+    header_t  headEnvAvant = Hd_val(envClosAvant);
+    int64_t  element0EnvAvant = Long_val(Field0(envClosAvant));
+
+    header_t envHeadOFF =  Hd_val(env);
+    int64_t  elt0EnvOFF = Long_val(Field0(env));
+
     if(Is_block(accu))
     {
         accu = copy_to_space(to_space, accu);
@@ -81,6 +95,7 @@ void start_gc(){
 
     /* Copie de racine dans env */
     env = copy_to_space(to_space, env);
+
 
     /* Copie des racines dans stack */
     int i = sp-1;
@@ -92,9 +107,29 @@ void start_gc(){
         i--;
     }
 
+    /*mlvalue closApres = Caml_state->stack[0];
+    header_t headClosApres = Hd_val(closApres);
+    int64_t  codeClosApres = Long_val(Field0(closApres));
+    mlvalue  envClosApres = Field1(closApres);
+    header_t  headEnvApres = Hd_val(envClosApres);
+    int64_t  element0EnvApres = Long_val(Field0(envClosApres));
+*/
     change_capacities(from_space,to_space);
     clear_semispace(from_space);
+
     realoc_semispaces(from_space, to_space);
+
     Caml_state->current_semispace = (Caml_state->current_semispace + 1) % 2;
+
+    mlvalue closApres = Caml_state->stack[0];
+    header_t headClosApres = Hd_val(closApres);
+    int64_t  codeClosApres = Long_val(Field0(closApres));
+    mlvalue  envClosApres = Field1(closApres);
+    header_t  headEnvApres = Hd_val(envClosApres);
+    int64_t  element0EnvApres = Long_val(Field0(envClosApres));
+
+    header_t envHeadOFFApres =  Hd_val(env);
+    int64_t  elt0EnvOFFApres = Long_val(Field0(env));
+
 }
 

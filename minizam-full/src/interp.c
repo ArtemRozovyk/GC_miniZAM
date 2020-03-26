@@ -48,10 +48,10 @@ mlvalue caml_interprete(code_t* prog) {
 #endif
 
     tour_de_boucleAAAAAAAA++;
-    if (tour_de_boucleAAAAAAAA==166464)
+    /*if (tour_de_boucleAAAAAAAA==55)
     {
-        printf("");
-    }
+        printf("fgdg");
+    }*/
     switch (prog[pc++]) {
     case CONST:
       accu = Val_long(prog[pc++]);
@@ -86,10 +86,20 @@ mlvalue caml_interprete(code_t* prog) {
       } else {
         pc++;
       }
+      /*if(tour_de_boucleAAAAAAAA>47) {
+          header_t envHeadOFF = Hd_val(env);
+          int64_t elt0EnvOFF = Long_val(Field0(env));
+          printf("frerze");
+      }*/
       break;
 
     case PUSH:
       PUSH_STACK(accu);
+         /*   if(tour_de_boucleAAAAAAAA>47) {
+                header_t envHeadOFF = Hd_val(env);
+                int64_t elt0EnvOFF = Long_val(Field0(env));
+                printf("frerze");
+            }*/
       break;
 
     case POP:
@@ -98,6 +108,23 @@ mlvalue caml_interprete(code_t* prog) {
 
     case ACC:
       accu = stack[sp-prog[pc++]-1];
+      /*if(tour_de_boucleAAAAAAAA==48) {
+          mlvalue closOFF = accu;
+          header_t headClosOFF = Hd_val(closOFF);
+          int64_t codeClosOFF = Long_val(Field0(closOFF));
+          mlvalue envClosOFF = Field1(closOFF);
+          header_t headEnvOFF = Hd_val(envClosOFF);
+          int64_t element0EnvOFF = Long_val(Field0(envClosOFF));
+
+
+
+          printf("er");
+      }
+            if(tour_de_boucleAAAAAAAA>47) {
+                header_t envHeadOFF = Hd_val(env);
+                int64_t elt0EnvOFF = Long_val(Field0(env));
+                printf("frerze");
+            }*/
       break;
 
     case ENVACC:
@@ -122,6 +149,12 @@ mlvalue caml_interprete(code_t* prog) {
       pc = Addr_closure(accu);
       env = Env_closure(accu);
       extra_args = n-1;
+
+        /*if(tour_de_boucleAAAAAAAA>47) {
+            header_t envHeadOFF = Hd_val(env);
+            int64_t elt0EnvOFF = Long_val(Field0(env));
+            printf("frerze");
+        }*/
       break;
     }
 
@@ -224,6 +257,19 @@ mlvalue caml_interprete(code_t* prog) {
 
     case OFFSETCLOSURE: {
       accu = make_closure(Long_val(Field(env,0)), env);
+/*
+        mlvalue closOFF = accu;
+        header_t headClosOFF = Hd_val(closOFF);
+        int64_t  codeClosOFF = Long_val(Field0(closOFF));
+        mlvalue  envClosOFF = Field1(closOFF);
+        header_t  headEnvOFF = Hd_val(envClosOFF);
+        int64_t  element0EnvOFF = Long_val(Field0(envClosOFF));
+
+        if(tour_de_boucleAAAAAAAA>47) {
+            header_t envHeadOFF = Hd_val(env);
+            int64_t elt0EnvOFF = Long_val(Field0(env));
+            printf("frerze");
+        }*/
       break;
     }
 
@@ -243,6 +289,11 @@ mlvalue caml_interprete(code_t* prog) {
     case GETFIELD: {
       uint64_t n = prog[pc++];
       accu = Field(accu, n);
+        /*if(tour_de_boucleAAAAAAAA>47) {
+            header_t envHeadOFF = Hd_val(env);
+            int64_t elt0EnvOFF = Long_val(Field0(env));
+            printf("frerze");
+        }*/
       break;
     }
 
