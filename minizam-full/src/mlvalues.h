@@ -47,7 +47,7 @@ bits  63    10 9     8 7   0
 
 mlvalue make_empty_block(tag_t tag);
 mlvalue make_block(size_t size, tag_t tag);
-
+#define Set_Color(v,c) (Hd_val(v) = ((Hd_val(v) & 0xFFFFFFFFFFFFFCFF) | (c << 8)) )
 #define Make_empty_env() make_empty_block(ENV_T)
 #define Make_env(size) make_block(size,ENV_T)
 

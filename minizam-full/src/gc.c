@@ -5,11 +5,6 @@
 #include "lists.h"
 
 
-void change_color(mlvalue *mlvalue1, color_t color) {
-    header_t h = Hd_val((*mlvalue1));
-    header_t newh = Make_header(Size((*mlvalue1)), color, Tag((*mlvalue1)));
-    Hd_val((*mlvalue1)) = newh;
-}
 
 
 void traverse_greys(ml_list greys) {
@@ -17,15 +12,15 @@ void traverse_greys(ml_list greys) {
         return;
     ml_list nw_greys = ml_empty_list();
     while (greys && greys->val) {
-        for (int i = 1; i < Size(*greys->val); i++) {
-            if (Is_block(Field(*greys->val, i))) {
-                if (Color(Field(*greys->val, i)) == WHITE) {
-                    change_color(&Field(*greys->val, i), GRAY);
-                    nw_greys = pushHead(&Field(*greys->val, i), nw_greys);
+        for (int i = 1; i < Size(greys->val); i++) {
+            if (Is_block(Field(greys->val, i))) {
+                if (Color(Field(greys->val, i)) == WHITE) {
+                    Set_Color(Field(greys->val, i), GRAY);
+                    nw_greys = pushHead(Ptr_val(Field(greys->val, i)), nw_greys);
                 }
             }
         }
-        change_color(greys->val, BLACK);
+        Set_Color(greys->val, BLACK);
         greys = greys->next;
     }
     //show(nw_greys);
@@ -40,22 +35,22 @@ void traverse_greys(ml_list greys) {
 void mark(mlvalue *stack, unsigned int curr_stack_sz,mlvalue accu,mlvalue env) {
     ml_list greys = ml_empty_list();
     if (Is_block(accu)){
-        change_color(&accu, GRAY);
-        greys = pushHead(&accu, greys);
+        Set_Color(accu, GRAY);
+        greys = pushHead(Ptr_val(accu), greys);
     }
-    change_color(&env, GRAY);
-    greys = pushHead(&env,greys);
+    Set_Color(env, GRAY);
+    greys = pushHead(Ptr_val(env),greys);
     for (int i = 0; i < curr_stack_sz; i++) {
         mlvalue v = stack[i];
         if (Is_block(stack[i])) {
             if (Color(stack[i]) == WHITE) {
-                change_color(&stack[i], GRAY);
-                greys = pushHead(&stack[i], greys);
+                Set_Color(stack[i], GRAY);
+                greys = pushHead(Ptr_val(stack[i]), greys);
             }
         }
     }
     traverse_greys(greys);
-    show(greys);
+    //show(greys);
     release(greys);
     free(greys);
 }
@@ -88,6 +83,11 @@ ml_list sweep(ml_list lst) {
             pred = pred->next;
 
         }
+    }
+    ml_list reset_white=lst;
+    while(reset_white&&reset_white->val){
+        Set_Color(reset_white->val, WHITE);
+        reset_white=reset_white->next;
     }
     return lst;
 }
