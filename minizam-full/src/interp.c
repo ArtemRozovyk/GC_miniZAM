@@ -233,7 +233,15 @@ mlvalue caml_interprete(code_t* prog) {
         }
       }
       accu = blk;
-
+        if(Caml_state->big_list_size>55&&!done){
+            mark(stack,sp,accu,env);
+            //printf("\n");
+            //show_colors(Caml_state->big_list);
+            Caml_state->big_list=sweep(Caml_state->big_list);
+            //printf(" nl \n");
+            //show_colors(Caml_state->big_list);
+            done=1;
+        }
       break;
     }
 
@@ -311,7 +319,7 @@ mlvalue caml_interprete(code_t* prog) {
 
             //printf("\n");
             //show_colors(Caml_state->big_list);
-            Caml_state->big_list=sweep(Caml_state->big_list);
+            //Caml_state->big_list=sweep(Caml_state->big_list);
             //printf(" nl \n");
             //show_colors(Caml_state->big_list);
             done=1;

@@ -40,8 +40,10 @@ void traverse_greys(ml_list greys) {
 void mark(mlvalue *stack, unsigned int curr_stack_sz,mlvalue accu,mlvalue env) {
     ml_list greys = ml_empty_list();
     if (Is_block(accu)){
+        change_color(&accu, GRAY);
         greys = pushHead(&accu, greys);
     }
+    change_color(&env, GRAY);
     greys = pushHead(&env,greys);
     for (int i = 0; i < curr_stack_sz; i++) {
         mlvalue v = stack[i];
@@ -65,10 +67,7 @@ ml_list sweep(ml_list lst) {
     while (lst != NULL && Color(lst->val) == WHITE) {
         ml_list tofree = lst;
         lst = lst->next;
-        //free(tofree->val-1)
-
-        mlvalue k=tofree->val;
-        free((mlvalue * ) k-1);
+        free((mlvalue * ) tofree->val-1);
 
         free(tofree);
     }
@@ -79,13 +78,11 @@ ml_list sweep(ml_list lst) {
 
 
 
-        while (pred->next != NULL  ) {
-            color_t clr = Color(pred->next->val) ;
-            if(clr == WHITE ){
+        while (pred->next != NULL) {
+            if(Color(pred->next->val) == WHITE ){
                 ml_list tofree = pred->next;
                 pred->next = pred->next->next;
-                mlvalue k=tofree->val;
-                free((mlvalue * ) k-1);
+                free((mlvalue * ) tofree->val-1);
                 free(tofree);
             }
             pred = pred->next;

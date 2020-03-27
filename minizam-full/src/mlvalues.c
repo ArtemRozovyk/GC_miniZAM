@@ -10,7 +10,7 @@
 
 mlvalue make_empty_block(tag_t tag) {
   mlvalue* block = caml_alloc(2*sizeof(mlvalue));
-  block[0] = Make_header(0, WHITE, tag);
+  block[0] = Make_header(1, WHITE, tag);
   Caml_state->big_list=pushHead(block+1,Caml_state->big_list);
   Caml_state->big_list_size++;
   return Val_ptr(block+1);
