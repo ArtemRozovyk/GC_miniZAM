@@ -3,13 +3,9 @@
 #include <stdint.h>
 
 #include "domain_state.h"
-#include "interp.h"
-#include "config.h"
 #include "mlvalues.h"
 #include "instruct.h"
-#include "alloc.h"
 #include "primitives.h"
-#include "gc.h"
 
 /* Helpers to manipulate the stack. Note that |sp| always point to the
    first empty element in the stack; hence the prefix -- in POP, but

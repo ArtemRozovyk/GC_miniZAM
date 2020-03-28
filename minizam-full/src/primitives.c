@@ -1,8 +1,6 @@
-#include <stdlib.h>
 #include <stdio.h>
 
 #include "mlvalues.h"
-#include "memory.h"
 
 #define MAKE_BIN_PRIM(name,op)                      \
   mlvalue ml_##name(mlvalue a, mlvalue b) {         \

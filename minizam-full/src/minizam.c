@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "domain_state.h"
-#include "config.h"
 #include "mlvalues.h"
 #include "parser.h"
 #include "interp.h"

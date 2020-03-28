@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "alloc.h"
 #include "mlvalues.h"
 #include "instruct.h"
 #include "primitives.h"

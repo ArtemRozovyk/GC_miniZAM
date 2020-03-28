@@ -1,13 +1,9 @@
 //
 // Created by hernouf on 19/03/2020.
 //
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include "gc.h"
 #include "fifo.h"
 #include "domain_state.h"
-#include "config.h"
 
 extern mlvalue accu; 
 extern mlvalue env;
@@ -15,31 +11,6 @@ extern unsigned int sp;
 
 mlvalue * contextValue = NULL;
 
-void clear_semispace(semi_space space){
-    free(space->tas);
-    space->alloc_pointer=0;
-}
-
-
-void realoc_semispaces(semi_space from_space, semi_space to_space){
-    from_space->tas = malloc(sizeof(mlvalue) * from_space->capcity);
-    mlvalue *tmp = malloc(sizeof(mlvalue) * to_space->capcity);
-    memcpy(tmp, to_space->tas, sizeof(mlvalue) * to_space->alloc_pointer);
-    to_space->tas = tmp;
-}
-
-void change_capacities(semi_space from_space, semi_space to_space){
-    if(to_space->alloc_pointer*2 >= to_space->capcity)
-    {
-        from_space->capcity *= 1.5;
-        to_space->capcity *= 1.5;
-    }
-    else
-    {
-        from_space->capcity /= 1.5;
-        to_space->capcity /= 1.5;
-    }
-}
 
 mlvalue copy_to_space(semi_space to_space, mlvalue addr){
     mlvalue resultat;
@@ -51,7 +22,8 @@ mlvalue copy_to_space(semi_space to_space, mlvalue addr){
         context ctx = pop_fifo(fifo);
         if(Tag(ctx.val)==FWD_PTR_T)
         {
-            *(ctx.place)=Field0(ctx.val);
+            mlvalue *place = (mlvalue*) ctx.place;
+            *place = Field0(ctx.val);
         }
         else
         {
@@ -79,7 +51,8 @@ mlvalue copy_to_space(semi_space to_space, mlvalue addr){
                 }
             }
 
-            *(ctx.place) = block_to_space + 1;
+            mlvalue *place = (mlvalue*) ctx.place;
+            *place = Val_ptr(block_to_space + 1);
             block_to_space = to_space->tas + to_space->alloc_pointer;
         }
     }
@@ -88,20 +61,7 @@ mlvalue copy_to_space(semi_space to_space, mlvalue addr){
     return resultat;
 }
 
-void stop_gc(){
-    semi_space from_space = Caml_state->space[Caml_state->current_semispace];
-    semi_space to_space = Caml_state->space[(Caml_state->current_semispace + 1) %2];
-    change_capacities(from_space,to_space);
-    clear_semispace(from_space);
-
-    realoc_semispaces(from_space, to_space);
-
-    Caml_state->current_semispace = (Caml_state->current_semispace + 1) % 2;
-}
-
-void start_gc(){
-    semi_space to_space = Caml_state->space[(Caml_state->current_semispace + 1) %2];
-
+void copy_all_to_space(semi_space to_space){
     if(Is_block(accu))
     {
         accu = copy_to_space(to_space, accu);
@@ -125,7 +85,37 @@ void start_gc(){
             *contextValue = copy_to_space(to_space, *contextValue);
         }
     }
+}
 
-    stop_gc();
+void start_gc(){
+    semi_space from_space = Caml_state->space[Caml_state->current_semispace];
+    semi_space to_space = Caml_state->space[(Caml_state->current_semispace + 1) %2];
+
+    copy_all_to_space(to_space);
+
+    if(to_space->alloc_pointer*2 >= to_space->capcity)
+    {
+        from_space->capcity *= 1.5;
+    }
+    else
+    {
+        from_space->capcity /= 1.5;
+    }
+
+    Caml_state->space[Caml_state->current_semispace] = new_semispace(from_space->capcity);
+    free_semispace(from_space);
+
+    semi_space to_space_final;
+    if(to_space->alloc_pointer*2 >= to_space->capcity)
+        to_space_final = new_semispace(to_space->capcity*1.5);
+    else
+        to_space_final = new_semispace(to_space->capcity/1.5);
+
+    copy_all_to_space(to_space_final);
+
+    free_semispace(to_space);
+    Caml_state->space[(Caml_state->current_semispace + 1) %2] = to_space_final;
+
+    Caml_state->current_semispace = (Caml_state->current_semispace + 1) % 2;
 }
 

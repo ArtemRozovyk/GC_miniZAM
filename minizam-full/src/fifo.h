@@ -8,7 +8,7 @@
 #include "mlvalues.h"
 
 typedef struct _context {
-    mlvalue* place;
+    void* place;
     mlvalue val;
 } context;
 
@@ -24,7 +24,7 @@ typedef struct mlf {
 
 ml_fifo new_ml_fifo();
 int is_empty_fifo(ml_fifo);
-void push_fifo(ml_fifo, mlvalue*, mlvalue);
+void push_fifo(ml_fifo, void*, mlvalue);
 context pop_fifo(ml_fifo);
 void free_fifo(ml_fifo);
 

@@ -16,7 +16,7 @@ int is_empty_fifo(ml_fifo fifo){
     return fifo->start==NULL;
 }
 
-void push_fifo(ml_fifo fifo, mlvalue* place, mlvalue val){
+void push_fifo(ml_fifo fifo, void* place, mlvalue val){
     ml_fifo_field field = malloc(sizeof(struct mlff));
     context ctx;
     ctx.place = place;
