@@ -22,7 +22,7 @@ void add_new_page(caml_domain_state *c_s) {
     mlvalue *page = caml_alloc(sizeof(mlvalue) * (Page_size / sizeof(mlvalue) + 1));
     page[0] = Make_header(Page_size / sizeof(mlvalue), WHITE, BLOCK_T);
     Caml_state->page_list = pushHead(Ptr_val(page[0]), Caml_state->page_list);
-    c_s->free_list = pushTail(Ptr_val(page + 1), c_s->free_list);
+    c_s->free_list = pushHead(Ptr_val(page + 1), c_s->free_list);
     c_s->free_list_sz += 1;
 }
 //returns header pointer of a block
@@ -60,10 +60,10 @@ mlvalue *find_first_fit(caml_domain_state *pState, size_t size) {
         size_t bl_sz = Size(curr->val);
         mlvalue *fit = curr->val-1;
         if(bl_sz<10){
-            printf(" ");
+            printf("");
         }
         if(pState->big_list_size>5463){
-            printf(" ");
+            printf("");
         }
         if (bl_sz > size) {
             Field(curr->val, size) = Make_header(bl_sz - (size + 1), WHITE, BLOCK_T);

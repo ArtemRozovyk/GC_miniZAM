@@ -55,6 +55,9 @@ void mark(mlvalue *stack, unsigned int curr_stack_sz,mlvalue accu,mlvalue env) {
     free(greys);
 }
 
+
+
+
 ml_list sweep(ml_list lst) {
     if (lst->val == NULL) {
         return lst;
