@@ -22,7 +22,22 @@ ml_list pushHead(mlvalue *i, ml_list fl) {
         ml_list nfl = ml_empty_list();
         nfl->val = i;
         nfl->next = fl;
+        return nfl;
     }
+}
+ml_list pushTail(mlvalue * i,ml_list fl){
+    if (fl->val == NULL) {
+        fl->val = i;
+        return fl;
+    }else{
+        ml_list ll=fl;
+        while (ll->next){
+            ll=ll->next;
+        }
+        ll->next=ml_empty_list();
+        ll->next->val=i;
+    }
+    return fl;
 }
 
 

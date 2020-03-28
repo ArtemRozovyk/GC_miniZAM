@@ -19,6 +19,7 @@ struct mll {
 
 ml_list ml_empty_list();
 ml_list pushHead(mlvalue * i,ml_list fl);
+ml_list pushTail(mlvalue * i,ml_list fl);
 void show (ml_list fl);
 void release(ml_list fl);
 

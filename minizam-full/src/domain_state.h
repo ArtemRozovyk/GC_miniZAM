@@ -5,14 +5,23 @@
 #include "lists.h"
 
 
+
+typedef struct pg {
+    mlvalue * blocks;
+    mlvalue current_block;
+    ulong capacity;
+    ulong size;
+
+} * page;
 typedef struct _caml_domain_state {
   /* Stack */
   mlvalue* stack;
   /*Big objects*/
   ml_list big_list;
-  int big_list_size;
+  ulong big_list_size;
   ml_list page_list;
   ml_list free_list;
+  ulong free_list_sz;
 } caml_domain_state;
 
 /* The global state */
