@@ -9,7 +9,6 @@
 /* Note that it doesn't hold 8MB mlvalues, but rather 8MB of bytes. */
 /* No boundary-checks are done: stack overflow will silently corrupt
    the heap; probably causing something to go wrong somewhere. */
-/* TODO: auto-growing stack, or throw stack overflow when needed. */
 #define Stack_size (8 * MB)
 #define Semi_space_size (32 * KB)
 

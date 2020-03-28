@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "instruct.h"
 #include "mlvalues.h"
@@ -119,7 +120,10 @@ unsigned int count_lines(FILE* f) {
       count++;
     }
   }
-  fseek(f, 0, SEEK_SET); // TODO: check fseek return?
+  if(fseek(f, 0, SEEK_SET)==-1){
+      perror("Error while reading file\n");
+      exit(EXIT_FAILURE);
+  }
   return count;
 }
 

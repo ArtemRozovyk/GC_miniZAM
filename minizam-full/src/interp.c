@@ -6,12 +6,32 @@
 #include "mlvalues.h"
 #include "instruct.h"
 #include "primitives.h"
-
+#include "config.h"
 /* Helpers to manipulate the stack. Note that |sp| always point to the
    first empty element in the stack; hence the prefix -- in POP, but
    postfix ++ in PUSH. */
-#define POP_STACK() stack[--sp]
-#define PUSH_STACK(x) stack[sp++] = x
+#define POP_STACK() pop_stack(stack, &sp)
+#define PUSH_STACK(x) push_stack(x,stack,&sp)
+
+mlvalue pop_stack(mlvalue* stack, unsigned int* sp){
+    if(*sp>0) {
+        return stack[--(*sp)];
+    }
+    else {
+        perror("Stack underflow!\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void push_stack(mlvalue x, mlvalue* stack, unsigned int* sp){
+    if(*sp <= Stack_size){
+        stack[(*sp)++] = x;
+    }
+    else{
+        perror("Stack overflow!\n");
+        exit(EXIT_FAILURE);
+    }
+}
 
 mlvalue accu;
 mlvalue env;
@@ -96,19 +116,17 @@ mlvalue caml_interprete(code_t* prog) {
 
     case APPLY: {
       uint64_t n = prog[pc++];
-      mlvalue* tmp = malloc(n * sizeof(mlvalue)); // TODO: remove malloc
-      for (uint64_t i = 0; i < n; i++) {
-        tmp[i] = POP_STACK();
+      if(sp+3 > Stack_size){
+          perror("Stack overflow!\n");
+          exit(EXIT_FAILURE);
       }
-      PUSH_STACK(env);
-      PUSH_STACK(Val_long(pc));
-      PUSH_STACK(Val_long(extra_args));
-      /* push in reverse order to keep the initial order */
-      for (int i = n-1; i >= 0; i--) {
-        PUSH_STACK(tmp[i]);
+      for (uint64_t i = sp-1; i >= sp-n ; i--) {
+        stack[i+3] = stack[i];
       }
-      free(tmp);
-      mlvalue x =Field0(accu);
+      stack[sp-n] = env;
+      stack[sp-n+1] =Val_long(pc);
+      stack[sp-n+2] = Val_long(extra_args);
+      sp +=3;
       pc = Addr_closure(accu);
       env = Env_closure(accu);
       extra_args = n-1;
@@ -118,18 +136,14 @@ mlvalue caml_interprete(code_t* prog) {
     case APPTERM: {
       uint64_t n = prog[pc++];
       uint64_t m = prog[pc++];
-      mlvalue* tmp = malloc(n * sizeof(mlvalue)); // TODO: remove malloc
-      for (uint64_t i = 0; i < n; i++) {
-        tmp[i] = POP_STACK();
+      if(sp < m){
+          perror("Stack underflow!\n");
+          exit(EXIT_FAILURE);
       }
-      for (uint64_t i = 0; i < m-n; i++) {
-        POP_STACK();
+      for (uint64_t i = sp-n; i < sp; i++) {
+        stack[i-m+n] = stack[i];
       }
-      /* push in reverse order to keep the initial order */
-      for (int i = n-1; i >= 0; i--) {
-        PUSH_STACK(tmp[i]);
-      }
-      free(tmp);
+      sp -= m-n;
       pc = Addr_closure(accu);
       env = Env_closure(accu);
       extra_args += n-1;
