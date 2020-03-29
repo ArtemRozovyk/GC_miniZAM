@@ -47,7 +47,16 @@ mlvalue caml_interprete(code_t* prog) {
       printf("]  env=%s\n", val_to_str(env));
       print_instr(prog, pc);
 #endif
-
+    //printf("Instr : %ld\n",insttuction);
+    if(insttuction==24708){
+        printf("here");
+        ml_list curr4=Caml_state->free_list;
+        while(curr4&&curr4->val){
+            show_page(curr4->val);
+            printf(" |-| \n\n");
+            curr4=curr4->next;
+        }
+    }
     switch (prog[pc++]) {
     case CONST:
       accu = Val_long(prog[pc++]);
@@ -218,11 +227,40 @@ mlvalue caml_interprete(code_t* prog) {
     }
 
     case OFFSETCLOSURE: {
-        if(insttuction>10&&!done){
+        if(insttuction>500&&!done){
             mark(stack,sp,accu,env);
             //printf("\n");
-            show_colors(Caml_state->big_list);
+            //show_colors(Caml_state->big_list);
+            //
+            printf("pl1\n");
+            ml_list curr2=Caml_state->page_list;
+            while(curr2&&curr2->val){
+                show_page(curr2->val+1);
+                printf(" |-| \n\n");
+                curr2=curr2->next;
+            }
+            printf("Fl1\n");
+            ml_list curr=Caml_state->free_list;
+            while(curr&&curr->val){
+                show_page(curr->val);
+                printf(" |-| \n\n");
+                curr=curr->next;
+            }
             gc();
+            printf("pl2\n");
+            ml_list curr3=Caml_state->page_list;
+            while(curr3&&curr3->val){
+                show_page(curr3->val+1);
+                printf(" |-| \n\n");
+                curr3=curr3->next;
+            }
+            printf("Fl2\n");
+            ml_list curr4=Caml_state->free_list;
+            while(curr4&&curr4->val){
+                show_page(curr4->val);
+                printf(" |-| \n\n");
+                curr4=curr4->next;
+            }
             //printf(" nl \n");
             //show_colors(Caml_state->big_list);
             done=1;

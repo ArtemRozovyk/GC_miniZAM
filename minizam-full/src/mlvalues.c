@@ -22,6 +22,7 @@ void add_new_page(caml_domain_state *c_s) {
 //returns header pointer of a block
 mlvalue *find_first_fit(caml_domain_state *pState, size_t size);
 
+
 mlvalue make_empty_block(tag_t tag) {
     if (Caml_state->free_list_sz == 0) {
         //alocate page and add entirely to freelist
@@ -63,7 +64,43 @@ mlvalue make_block(size_t size, tag_t tag) {
     return Val_ptr(free_block + 1);
 }
 
+
 mlvalue *find_first_fit(caml_domain_state *pState, size_t size) {
+    ml_list current_fl_chain = pState->free_list;
+    while (current_fl_chain && current_fl_chain->val) {
+        size_t bloc_size= Size(current_fl_chain->val);
+        mlvalue * block = current_fl_chain->val;
+        if(Tag(Val_ptr(block))==PAGE_T && bloc_size > size){
+            Field(block, size) =
+                    Make_header(bloc_size - (size + 1), RED, PAGE_T);
+            current_fl_chain->val=current_fl_chain->val+size+1;
+            return block-1;
+        }
+
+        if(Tag(Val_ptr(block))==INTERN_PAGE_T){
+            if(bloc_size==size){
+                //remove from list and give up the pointer
+                pState->free_list=remove_value_from_list(block,pState->free_list);
+                pState->free_list_sz--;
+                return block-1;
+            }
+            if(bloc_size > size && bloc_size-size>=2){
+                //we need to have a place for the next header
+                Field(block, size) =
+                        Make_header(bloc_size - (size + 1), RED, INTERN_PAGE_T);
+                current_fl_chain->val=current_fl_chain->val+size+1;
+                return block-1;
+            }
+        }
+
+        current_fl_chain=current_fl_chain->next;
+    }
+    return NULL;
+}
+
+
+
+mlvalue *find_first_fit2(caml_domain_state *pState, size_t size) {
     ml_list curr = pState->free_list;
     while (curr && curr->val) {
         header_t header = Hd_val(curr->val);
@@ -80,6 +117,7 @@ mlvalue *find_first_fit(caml_domain_state *pState, size_t size) {
             //
             curr->val = Ptr_val(curr->val + size + (size==bl_sz ? 0 : 1));
 
+            //printf("allocated block ");
 
             return fit;
         }

@@ -20,6 +20,8 @@ struct mll {
 ml_list ml_empty_list();
 ml_list pushHead(mlvalue * i,ml_list fl);
 ml_list pushTail(mlvalue * i,ml_list fl);
+ml_list remove_value_from_list(mlvalue *pInt, ml_list pMll);
+
 void show (ml_list fl);
 void release(ml_list fl);
 

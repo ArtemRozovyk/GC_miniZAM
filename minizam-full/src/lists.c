@@ -49,6 +49,29 @@ void show(ml_list fl) {
     }
 }
 
+
+ml_list remove_value_from_list(mlvalue *pInt, ml_list pMll) {
+
+
+    if (pMll&&pMll->val){
+        if(pInt==pMll->val){
+            return pMll->next;
+        }
+    }
+    //not in head
+    ml_list curr =pMll;
+    while(curr&&curr->next&&curr->next->val!=pInt){
+        curr=curr->next;
+    }
+    if(!curr||!curr->next||curr->next->val!=pInt){
+        perror("Removing non-existent value");
+    } else{
+        curr->next=curr->next->next;
+    }
+    return pMll;
+}
+
+
 void show_colors(ml_list fl) {
     ml_list tmp = fl;
     while (tmp && tmp->val) {
