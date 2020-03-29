@@ -48,15 +48,7 @@ mlvalue caml_interprete(code_t* prog) {
       print_instr(prog, pc);
 #endif
     //printf("Instr : %ld\n",insttuction);
-    if(insttuction==24708){
-        printf("here");
-        ml_list curr4=Caml_state->free_list;
-        while(curr4&&curr4->val){
-            show_page(curr4->val);
-            printf(" |-| \n\n");
-            curr4=curr4->next;
-        }
-    }
+
     switch (prog[pc++]) {
     case CONST:
       accu = Val_long(prog[pc++]);
@@ -232,6 +224,8 @@ mlvalue caml_interprete(code_t* prog) {
             //printf("\n");
             //show_colors(Caml_state->big_list);
             //
+            gc();
+            /*
             printf("pl1\n");
             ml_list curr2=Caml_state->page_list;
             while(curr2&&curr2->val){
@@ -261,6 +255,7 @@ mlvalue caml_interprete(code_t* prog) {
                 printf(" |-| \n\n");
                 curr4=curr4->next;
             }
+            */
             //printf(" nl \n");
             //show_colors(Caml_state->big_list);
             done=1;

@@ -66,7 +66,9 @@ ml_list remove_value_from_list(mlvalue *pInt, ml_list pMll) {
     if(!curr||!curr->next||curr->next->val!=pInt){
         perror("Removing non-existent value");
     } else{
+        ml_list tofree=curr->next;
         curr->next=curr->next->next;
+        free(tofree);
     }
     return pMll;
 }

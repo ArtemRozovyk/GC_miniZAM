@@ -140,7 +140,7 @@ ml_list sweep_pages(ml_list pages) {
 
                 while(Tag(next_block)!=PAGE_T&&Color(next_block)!=BLACK){
                     block_sz +=Size(Val_ptr(next_block))+1;
-                    if(Tag(next_block)!=INTERN_PAGE_T){
+                    if(Tag(next_block)==INTERN_PAGE_T){
                         //find in freelist and update
                         updateFreeList(block,next_block,block_sz,INTERN_PAGE_T);
                     }
@@ -203,7 +203,7 @@ void updateFreeList(mlvalue *block, mlvalue *next_block, size_t block_sz,tag_t t
         currfl=currfl->next;
     }
     Hd_val(Val_ptr(block)) = Make_header(block_sz + Size(Val_ptr(next_block)), RED, tag);
-    (*old_p)=Ptr_val(block);
+    (*old_p)=block;
 }
 
 
