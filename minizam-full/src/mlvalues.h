@@ -5,7 +5,7 @@
 
 typedef int64_t mlvalue;
 typedef uint64_t header_t;
-typedef enum { WHITE, GRAY, BLACK } color_t;
+typedef enum { WHITE, GRAY, BLACK, RED } color_t;
 typedef enum { ENV_T, CLOSURE_T, BLOCK_T , PAGE_T } tag_t;
 
 /* If a mlvalue ends with 1, it's an integer, otherwise it's a pointer. */
@@ -39,6 +39,7 @@ bits  63    10 9     8 7   0
 #define WHITE 0
 #define GRAY 1
 #define BLACK 2
+#define RED 3
 #define Make_header(size,color,tag)                                     \
   ((header_t)(((size) << 10) | (((color) & 3) << 8) | ((tag) & 0xFF)))
 

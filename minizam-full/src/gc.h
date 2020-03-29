@@ -8,6 +8,6 @@
 
 #include "lists.h"
 ml_list mark(mlvalue * stack, unsigned int curr_stack_sz,mlvalue accu,mlvalue env);
-
+void gc();
 ml_list sweep(ml_list);
 #endif //GC_MINIZAM_GC_H

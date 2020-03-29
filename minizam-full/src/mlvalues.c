@@ -9,29 +9,39 @@
 #include "domain_state.h"
 #include "config.h"
 
-mlvalue make_empty_block(tag_t tag) {
-    mlvalue *block = caml_alloc(2 * sizeof(mlvalue));
-    block[0] = Make_header(1, WHITE, tag);
-    Caml_state->big_list = pushHead(block + 1, Caml_state->big_list);
-    Caml_state->big_list_size++;
-    return Val_ptr(block + 1);
-}
-
-
 void add_new_page(caml_domain_state *c_s) {
-    mlvalue *page = caml_alloc(sizeof(mlvalue) * (Page_size / sizeof(mlvalue) + 1));
-    page[0] = Make_header(Page_size / sizeof(mlvalue), WHITE, BLOCK_T);
-    Caml_state->page_list = pushHead(Ptr_val(page[0]), Caml_state->page_list);
+    mlvalue *page = malloc(sizeof(mlvalue) * (Page_size / sizeof(mlvalue) + 1));
+    page[0] = Make_header(Page_size / sizeof(mlvalue), RED, PAGE_T);
+    long l = page[0];
+
+    Caml_state->page_list = pushHead(Ptr_val(page), Caml_state->page_list);
     c_s->free_list = pushHead(Ptr_val(page + 1), c_s->free_list);
     c_s->free_list_sz += 1;
 }
+
 //returns header pointer of a block
 mlvalue *find_first_fit(caml_domain_state *pState, size_t size);
 
+mlvalue make_empty_block(tag_t tag) {
+    if (Caml_state->free_list_sz == 0) {
+        //alocate page and add entirely to freelist
+        add_new_page(Caml_state);
+    }
+    mlvalue *free_block = find_first_fit(Caml_state, 1);
+    if (!free_block) {
+        //block of sufficient size wasn't found,new page is needed.
+        add_new_page(Caml_state);
+        free_block = find_first_fit(Caml_state, 1);
+    }
+    //block has been found
+    free_block[0] = Make_header(1, WHITE, tag);
+    return Val_ptr(free_block + 1);
+}
+
+
 mlvalue make_block(size_t size, tag_t tag) {
-    size_t bytes_sz = size * sizeof(mlvalue);
     //if an object has half of pages size we consider it big
-    if (bytes_sz > Page_size / 2) {
+    if (size * sizeof(mlvalue) > Page_size / 2) {
         mlvalue *block = caml_alloc((size + 1) * sizeof(mlvalue));
         block[0] = Make_header(size, WHITE, tag);
         Caml_state->big_list = pushHead(block + 1, Caml_state->big_list);
@@ -56,21 +66,20 @@ mlvalue make_block(size_t size, tag_t tag) {
 mlvalue *find_first_fit(caml_domain_state *pState, size_t size) {
     ml_list curr = pState->free_list;
     while (curr && curr->val) {
-        header_t header=Hd_val(curr->val);
+        header_t header = Hd_val(curr->val);
         size_t bl_sz = Size(curr->val);
-        mlvalue *fit = curr->val-1;
-        if(bl_sz<10){
-            printf("");
-        }
-        if(pState->big_list_size>5463){
-            printf("");
-        }
-        if (bl_sz > size) {
-            Field(curr->val, size) = Make_header(bl_sz - (size + 1), WHITE, BLOCK_T);
+        mlvalue *fit = curr->val - 1;
 
-            curr->val = Ptr_val(curr->val+size+1);
-            header_t header2=Hd_val( curr->val);
-            size_t bl_sz2 = Size(curr->val);
+        if ((bl_sz >= size && Tag(curr->val) != PAGE_T) || bl_sz > size) {
+
+            if (bl_sz != size) {
+                Field(curr->val, size) =
+                        Make_header(bl_sz - (size + 1), RED, Tag(curr->val));
+            }
+
+            //
+            curr->val = Ptr_val(curr->val + size + (size==bl_sz ? 0 : 1));
+
 
             return fit;
         }
@@ -80,16 +89,23 @@ mlvalue *find_first_fit(caml_domain_state *pState, size_t size) {
 }
 
 
-
-
 mlvalue make_closure(uint64_t addr, mlvalue env) {
-    mlvalue *block = caml_alloc(3 * sizeof(mlvalue));
-    block[0] = Make_header(2, WHITE, CLOSURE_T);
-    block[1] = Val_long(addr);
-    block[2] = env;
-    Caml_state->big_list = pushHead(block + 1, Caml_state->big_list);
-    Caml_state->big_list_size++;
-    return Val_ptr(block + 1);
+
+    if (Caml_state->free_list_sz == 0) {
+        //alocate page and add entirely to freelist
+        add_new_page(Caml_state);
+    }
+    mlvalue *free_block = find_first_fit(Caml_state, 2);
+    if (!free_block) {
+        //block of sufficient size wasn't found,new page is needed.
+        add_new_page(Caml_state);
+        free_block = find_first_fit(Caml_state, 2);
+    }
+    //block has been found
+    free_block[0] = Make_header(2, WHITE, CLOSURE_T);
+    free_block[1] = Val_long(addr);
+    free_block[2] = env;
+    return Val_ptr(free_block + 1);
 }
 
 

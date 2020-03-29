@@ -31,8 +31,9 @@ mlvalue caml_interprete(code_t* prog) {
   unsigned int extra_args = 0;
   unsigned int trap_sp = 0;
     int done=0;
+    long insttuction=0;
   while(1) {
-
+    insttuction++;
 
 #ifdef DEBUG
       printf("pc=%d  accu=%s  sp=%d extra_args=%d trap_sp=%d stack=[",
@@ -217,12 +218,12 @@ mlvalue caml_interprete(code_t* prog) {
     }
 
     case OFFSETCLOSURE: {
-        if(Caml_state->big_list_size>55&&!done){
-            //mark(stack,sp,accu,env);
+        if(insttuction>10&&!done){
+            mark(stack,sp,accu,env);
             //printf("\n");
-            // show_colors(Caml_state->big_list);
-            //Caml_state->big_list=sweep(Caml_state->big_list);
-            // printf(" nl \n");
+            show_colors(Caml_state->big_list);
+            gc();
+            //printf(" nl \n");
             //show_colors(Caml_state->big_list);
             done=1;
         }
