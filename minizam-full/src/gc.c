@@ -268,7 +268,7 @@ ml_list free_empty_pages(ml_list lst) {
     if (lst->val == NULL) {
         return lst;
     }
-    while (lst != NULL && (Size(lst->val) == Page_size / sizeof(mlvalue))) {
+    while (lst != NULL && (Size(lst->val+1) == Page_size / sizeof(mlvalue))) {
         ml_list tofree = lst;
         lst = lst->next;
         free((mlvalue *) tofree->val - 1);
@@ -277,10 +277,10 @@ ml_list free_empty_pages(ml_list lst) {
     ml_list pred = lst;
     while (pred != NULL && pred->next != NULL) {
         while (pred->next != NULL) {
-            if (Size(pred->next->val) == Page_size / sizeof(mlvalue)) {
+            if (Size(pred->next->val+1) == Page_size / sizeof(mlvalue)) {
                 ml_list tofree = pred->next;
                 pred->next = pred->next->next;
-                free((mlvalue *) tofree->val - 1);
+                free( tofree->val - 1);
                 free(tofree);
             }
             pred = pred->next;
