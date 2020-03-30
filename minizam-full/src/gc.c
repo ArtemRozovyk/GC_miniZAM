@@ -260,7 +260,7 @@ ml_list sweep(ml_list lst) {
 void gc() {
     sweep(Caml_state->big_list);
     sweep_pages(Caml_state->page_list);
-    //Caml_state->page_list=free_empty_pages(Caml_state->page_list);
+    Caml_state->page_list=free_empty_pages(Caml_state->page_list);
 
 }
 

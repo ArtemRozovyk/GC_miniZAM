@@ -17,9 +17,6 @@ my %tests = (
     'appterm/fun_appterm'         => '1',
 
     'bench/list_1'                => '10000',
-    'bench/list_2'                => '1000000',
-    'bench/list_3'                => '100000',
-    'bench/list_4'                => '100000',
     'bench/list_5'                => '[1,[5,0]]',
     'bench/list_5'                => '[1,[5,0]]',
 
