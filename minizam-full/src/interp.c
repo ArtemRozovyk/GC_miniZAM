@@ -203,12 +203,15 @@ mlvalue caml_interprete(code_t* prog) {
     }
 
     case CLOSUREREC: {
+
       uint64_t addr = prog[pc++];
       uint64_t n = prog[pc++];
       if (n > 0) {
         PUSH_STACK(accu);
       }
       mlvalue closure_env = Make_env(n+1);
+
+      mlvalue laddr=Val_long(addr);
       Field(closure_env,0) = Val_long(addr);
       for (uint64_t i = 0; i < n; i++) {
         Field(closure_env,i+1) = POP_STACK();
@@ -219,7 +222,9 @@ mlvalue caml_interprete(code_t* prog) {
     }
 
     case OFFSETCLOSURE: {
-        if(insttuction>500&&!done){
+
+        if(insttuction>10&&!done){
+            mlvalue xx= stack[sp-1];
             mark(stack,sp,accu,env);
             //printf("\n");
             //show_colors(Caml_state->big_list);
@@ -229,7 +234,7 @@ mlvalue caml_interprete(code_t* prog) {
             printf("pl1\n");
             ml_list curr2=Caml_state->page_list;
             while(curr2&&curr2->val){
-                show_page(curr2->val+1);
+                show_page(curr2->val+1);[0
                 printf(" |-| \n\n");
                 curr2=curr2->next;
             }

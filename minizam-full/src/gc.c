@@ -16,11 +16,13 @@ bool contains(ml_list pMll, mlvalue *pInt);
 
 void traverse_greys(ml_list greys) {
     if (!greys || !greys->val)
-        return;
+        return;int j =0;
     ml_list nw_greys = ml_empty_list();
     while (greys && greys->val) {
-        for (int i = 1; i < Size(greys->val); i++) {
+        j++;
+        for (int i = 0; i < Size(greys->val); i++) {
             if (Is_block(Field(greys->val, i))) {
+                mlvalue m =Field(greys->val, i);
                 if (Color(Field(greys->val, i)) == WHITE) {
                     Set_Color(Field(greys->val, i), GRAY);
                     nw_greys = pushHead(Ptr_val(Field(greys->val, i)), nw_greys);
@@ -45,8 +47,10 @@ void mark(mlvalue *stack, unsigned int curr_stack_sz, mlvalue accu, mlvalue env)
         Set_Color(accu, GRAY);
         greys = pushHead(Ptr_val(accu), greys);
     }
-    Set_Color(env, GRAY);
-    greys = pushHead(Ptr_val(env), greys);
+    if (Is_block(accu)) {
+        Set_Color(env, GRAY);
+        greys = pushHead(Ptr_val(env), greys);
+    }
     for (int i = 0; i < curr_stack_sz; i++) {
         mlvalue v = stack[i];
         if (Is_block(stack[i])) {
