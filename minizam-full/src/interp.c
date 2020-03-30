@@ -223,18 +223,18 @@ mlvalue caml_interprete(code_t* prog) {
 
     case OFFSETCLOSURE: {
 
-        if(insttuction>10&&!done){
-            mlvalue xx= stack[sp-1];
+        if(insttuction%4000==0){
             mark(stack,sp,accu,env);
             //printf("\n");
             //show_colors(Caml_state->big_list);
             //
+
             gc();
-            /*
+/*
             printf("pl1\n");
             ml_list curr2=Caml_state->page_list;
             while(curr2&&curr2->val){
-                show_page(curr2->val+1);[0
+                show_page(curr2->val+1);
                 printf(" |-| \n\n");
                 curr2=curr2->next;
             }
@@ -244,6 +244,9 @@ mlvalue caml_interprete(code_t* prog) {
                 show_page(curr->val);
                 printf(" |-| \n\n");
                 curr=curr->next;
+            }
+            if(insttuction==19600){
+                printf( " ");
             }
             gc();
             printf("pl2\n");
@@ -260,7 +263,7 @@ mlvalue caml_interprete(code_t* prog) {
                 printf(" |-| \n\n");
                 curr4=curr4->next;
             }
-            */
+*/
             //printf(" nl \n");
             //show_colors(Caml_state->big_list);
             done=1;
@@ -358,7 +361,8 @@ mlvalue caml_interprete(code_t* prog) {
     }
 
     case STOP:
-
+            release(Caml_state->free_list);
+            free(Caml_state->free_list);
             //printf("\n");
             //show_colors(Caml_state->big_list);
             //Caml_state->big_list=sweep(Caml_state->big_list);

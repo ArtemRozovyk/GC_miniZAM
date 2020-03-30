@@ -28,14 +28,14 @@ mlvalue make_empty_block(tag_t tag) {
         //alocate page and add entirely to freelist
         add_new_page(Caml_state);
     }
-    mlvalue *free_block = find_first_fit(Caml_state, 1);
+    mlvalue *free_block = find_first_fit(Caml_state, 0);
     if (!free_block) {
         //block of sufficient size wasn't found,new page is needed.
         add_new_page(Caml_state);
-        free_block = find_first_fit(Caml_state, 1);
+        free_block = find_first_fit(Caml_state, 0);
     }
     //block has been found
-    free_block[0] = Make_header(1, WHITE, tag);
+    free_block[0] = Make_header(0, WHITE, tag);
     return Val_ptr(free_block + 1);
 }
 

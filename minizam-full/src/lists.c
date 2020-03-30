@@ -55,7 +55,9 @@ ml_list remove_value_from_list(mlvalue *pInt, ml_list pMll) {
 
     if (pMll&&pMll->val){
         if(pInt==pMll->val){
-            return pMll->next;
+            ml_list to_return=pMll->next;
+            free(pMll);
+            return to_return;
         }
     }
     //not in head

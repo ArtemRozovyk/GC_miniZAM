@@ -10,26 +10,27 @@
 
 ml_list free_empty_pages(ml_list pMll);
 
-void updateFreeList(mlvalue *pInt, mlvalue *pInt1, size_t sz,tag_t tag);
+void updateFreeList(mlvalue *pInt, mlvalue *pInt1, size_t sz, tag_t tag);
 
 bool contains(ml_list pMll, mlvalue *pInt);
 
 void traverse_greys(ml_list greys) {
     if (!greys || !greys->val)
-        return;int j =0;
+        return;
+    int j = 0;
     ml_list nw_greys = ml_empty_list();
     while (greys && greys->val) {
         j++;
-        for (int i = 0; i < Size(greys->val); i++) {
-            if (Is_block(Field(greys->val, i))) {
-                mlvalue m =Field(greys->val, i);
-                if (Color(Field(greys->val, i)) == WHITE) {
-                    Set_Color(Field(greys->val, i), GRAY);
-                    nw_greys = pushHead(Ptr_val(Field(greys->val, i)), nw_greys);
+        for (int i = 0; i < Size(Val_ptr(greys->val)); i++) {
+            if (Is_block(Field(Val_ptr(greys->val), i))) {
+                mlvalue m = Field(Val_ptr(greys->val), i);
+                if (Color(Field(Val_ptr(greys->val), i)) == WHITE) {
+                    Set_Color(Field(Val_ptr(greys->val), i), GRAY);
+                    nw_greys = pushHead(Ptr_val(Field(Val_ptr(greys->val), i)), nw_greys);
                 }
             }
         }
-        Set_Color(greys->val, BLACK);
+        Set_Color(Val_ptr(greys->val), BLACK);
         greys = greys->next;
     }
     //show(nw_greys);
@@ -90,7 +91,8 @@ void show_page(mlvalue *page) {
                 break;
             case PAGE_T:
                 tag = "PAGE_T";
-                break;case
+                break;
+            case
                 INTERN_PAGE_T:
                 tag = "INTERN_PAGE_T";
                 break;
@@ -116,7 +118,7 @@ void show_page(mlvalue *page) {
         }
         printf("( %s,%s,%p,%lu )", tag, color, page, Size(Val_ptr(page)));
         i++;
-        if (Tag(Val_ptr(page)) == PAGE_T || Tag(Val_ptr(page)) == INTERN_PAGE_T) {
+        if (Tag(Val_ptr(page)) == PAGE_T) {
             break;
         }
         page = page + (Size(Val_ptr(page)) + 1);
@@ -133,51 +135,61 @@ ml_list sweep_pages(ml_list pages) {
     ml_list curr = pages;
     while (curr && curr->val) {
         mlvalue *block = curr->val + 1;
+        mlvalue *block32 = curr->val + 1;
         long l = (*curr->val);
 
-
+        long j = 0;
         while (1) {
+           // printf("%ld\n",j);
+            j++;
             size_t block_sz = Size(Val_ptr(block));
-
             if (Color(Val_ptr(block)) == WHITE) {
-                mlvalue*  next_block = block + (block_sz + 1);
-
-                while(Tag(next_block)!=PAGE_T&&Color(next_block)!=BLACK){
-                    block_sz +=Size(Val_ptr(next_block))+1;
-                    if(Tag(next_block)==INTERN_PAGE_T){
+                mlvalue *next_block = block + (block_sz + 1);
+                //coalescing
+                long i = 0;
+                while (Tag(next_block) != PAGE_T && Color(next_block) != BLACK) {
+                    i++;
+                    if (Tag(next_block) == INTERN_PAGE_T) {
                         //find in freelist and update
-                        updateFreeList(block,next_block,block_sz,INTERN_PAGE_T);
+                        updateFreeList(block, next_block, block_sz, INTERN_PAGE_T);
                     }
-                    next_block=block + (block_sz + 1);
-                }
-                if(block_sz==317){
-                    printf("ff");
-                }
-                tag_t next_tag = Tag(next_block);
-                color_t next_color = Color(next_block);
+                    block_sz += Size(Val_ptr(block + (block_sz + 1))) + 1;
 
+                    next_block = block + (block_sz + 1);
+                }
+                //ignore empty block
 
-                //3 cases black, red, red+PAGE_T
-                if (next_color == BLACK) {
-                    //add it to free list as a new "kinda-page"
-                    Hd_val(Val_ptr(block)) = Make_header(block_sz, RED, INTERN_PAGE_T);
-                    //update if contains
-                    if(!contains(Caml_state->free_list,Ptr_val(block))){
-                        Caml_state->free_list = pushHead(Ptr_val(block), Caml_state->free_list);
-                        Caml_state->free_list_sz++;
+                    tag_t next_tag = Tag(next_block);
+                    color_t next_color = Color(next_block);
+
+                    //3 cases black, red, red+PAGE_T
+                    if (next_color == BLACK) {
+                        //add it to free list as a new "kinda-page"
+
+                        Hd_val(Val_ptr(block)) = Make_header(block_sz, RED, INTERN_PAGE_T);
+                        //update if contains
+                        if (!contains(Caml_state->free_list, Ptr_val(block))) {
+                            Caml_state->free_list = pushHead(Ptr_val(block), Caml_state->free_list);
+                            Caml_state->free_list_sz++;
+                        }
+
                     }
+                    if (next_tag == PAGE_T) {
+                        //find it in freelist and change the pointer to the new one.
+                        updateFreeList(block, next_block, block_sz, PAGE_T);
+                    }
+                if (Tag(Val_ptr(block)) == PAGE_T) {
+                    curr = curr->next;
+                    break;
+                }
 
-                }
-                if (next_tag == PAGE_T ) {
-                    //find it in freelist and change the pointer to the new one.
-                    updateFreeList(block,next_block,block_sz,PAGE_T);
-                }
-         }
-            if (Tag(Val_ptr(block)) ==  PAGE_T ) {
+            }
+            if (Tag(Val_ptr(block)) == PAGE_T) {
                 curr = curr->next;
                 break;
             }
-            block= block + block_sz + 1;
+            block = block + block_sz + 1;
+            block32 = block + block_sz + 1;
         }
 
     }
@@ -187,57 +199,29 @@ ml_list sweep_pages(ml_list pages) {
 }
 
 bool contains(ml_list pMll, mlvalue *pInt) {
-    while (pMll&&pMll->val){
-        if(pMll->val==pInt){
+    while (pMll && pMll->val) {
+        if (pMll->val == pInt) {
             return 1;
         }
-        pMll=pMll->next;
+        pMll = pMll->next;
     }
     return 0;
 }
 
 //find chain with pointer *next_block, change it with value of *block (that has its header updated)
-void updateFreeList(mlvalue *block, mlvalue *next_block, size_t block_sz,tag_t tag) {
-    ml_list currfl=Caml_state->free_list;
-    mlvalue ** old_p =NULL;
-    while(currfl&& currfl->val){
-        if(currfl->val==next_block){
-            old_p=&currfl->val;
+void updateFreeList(mlvalue *block, mlvalue *next_block, size_t block_sz, tag_t tag) {
+    ml_list currfl = Caml_state->free_list;
+    mlvalue **old_p = NULL;
+    while (currfl && currfl->val) {
+        if (currfl->val == next_block) {
+            old_p = &currfl->val;
         }
-        currfl=currfl->next;
+        currfl = currfl->next;
     }
-    Hd_val(Val_ptr(block)) = Make_header(block_sz + Size(Val_ptr(next_block)), RED, tag);
-    (*old_p)=block;
+    Hd_val(Val_ptr(block)) = Make_header(block_sz + (Size(Val_ptr(next_block))==0?1:Size(Val_ptr(next_block))), RED, tag);
+    (*old_p) = block;
 }
 
-
-ml_list sweep_pages2(ml_list pages) {
-    //pages->val contains adress of first case of a page
-    ml_list curr = pages;
-    while (pages && pages->val) {
-        mlvalue *block = pages->val + 1;
-        long l = Color(Val_ptr(block));
-        size_t bl_sz = Size(Val_ptr(block));
-        while (Tag(Ptr_val(block)) != PAGE_T) {
-            if (Color(Val_ptr(block)) == WHITE) {
-                //coalescing
-                while (Color(Val_ptr(block + (bl_sz + 1))) == WHITE) {
-                    bl_sz += Size(Val_ptr(block + (bl_sz + 1))) + 1;
-                    if (Color(Val_ptr(block + (bl_sz + 1))) == RED) {
-                        //found the end of the block inside a page
-                        bl_sz++;
-                    }
-                }
-                *(block - 1) = Make_header(bl_sz, WHITE, Tag(Val_ptr(block)));
-                Caml_state->free_list = pushHead(block, Caml_state->free_list);
-                Caml_state->free_list_sz++;
-            }
-            block = block + bl_sz + 1;
-        }
-        curr = curr->next;
-    }
-    return pages;
-}
 
 ml_list sweep(ml_list lst) {
     if (lst->val == NULL) {
