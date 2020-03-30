@@ -17,6 +17,8 @@ void caml_init_domain() {
   Caml_state->space[0] = new_semispace(Semi_space_size);
   Caml_state->space[1] = new_semispace(Semi_space_size);
   Caml_state->current_semispace=0;
+
+  Caml_state->remembered_set = new_ml_fifo();
 }
 
 void free_semispace(semi_space space){
@@ -28,6 +30,7 @@ void free_domain(){
     free(Caml_state->stack);
     free_semispace(Caml_state->space[0]);
     free_semispace(Caml_state->space[1]);
+    free_fifo(Caml_state->remembered_set);
     free(Caml_state);
 }
 

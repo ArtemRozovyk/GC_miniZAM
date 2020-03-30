@@ -2,6 +2,7 @@
 #define _DOMAIN_STATE_H
 
 #include "mlvalues.h"
+#include "fifo.h"
 
 typedef struct _semi_space{
     mlvalue* tas;
@@ -15,6 +16,7 @@ typedef struct _caml_domain_state {
   /* Tas */
   semi_space space[2];
   int current_semispace;
+  ml_fifo remembered_set;
 } caml_domain_state;
 
 /* The global state */

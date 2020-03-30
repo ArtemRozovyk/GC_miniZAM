@@ -21,14 +21,15 @@ typedef enum { ENV_T, CLOSURE_T, BLOCK_T, FWD_PTR_T} tag_t;
 #define Val_hd(hd) ((mlvalue)(hd))
 
 /* Structure of the header:
-     +--------+-------+-----+
-     | size   | color | tag |
-     +--------+-------+-----+
-bits  63    10 9     8 7   0
+     +--------+-------+-------------+----+
+     | size   | color | deja survie |tag |
+     +--------+-------+-------------+----+
+bits  63    10 9     8 7           7 6   0
 */
 #define Size_hd(hd)  ((hd) >> 10)
 #define Color_hd(hd) (((hd) >> 8) & 3)
-#define Tag_hd(hd)   ((hd) & 0xFF)
+#define Survie_hd(hd)   (((hd >> 7)) & 1)
+#define Tag_hd(hd)   ((hd) & 0x7F)
 
 #define Hd_val(v) (((header_t*)(v))[-1])
 #define Field(v,n) (Ptr_val(v)[n])
@@ -36,13 +37,14 @@ bits  63    10 9     8 7   0
 #define Field1(v) Field(v,1)
 #define Size(v) Size_hd(Hd_val(v))
 #define Color(v) Color_hd(Hd_val(v))
+#define Survie(v) Survie_hd(Hd_val(v))
 #define Tag(v)  Tag_hd(Hd_val(v))
 
 #define WHITE 0
 #define GRAY 1
 #define BLACK 2
-#define Make_header(size,color,tag)                                     \
-  ((header_t)(((size) << 10) | (((color) & 3) << 8) | ((tag) & 0xFF)))
+#define Make_header(size,color,survie,tag)                                     \
+  ((header_t)(((size) << 10) | (((color) & 3) << 8) | (((survie) & 1) << 7) | ((tag) & 0x7F)))
 
 #define Addr_closure(c) Long_val(Field0(c))
 #define Env_closure(c)  Field1(c)

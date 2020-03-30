@@ -11,20 +11,20 @@ extern  mlvalue* contextValue;
 
 mlvalue make_empty_block(tag_t tag) {
   mlvalue* block = allocate_in_semispace(2);
-  block[0] = Make_header(0, WHITE, tag);
+  block[0] = Make_header(0, WHITE, 0, tag);
   return Val_ptr(block+1);
 }
 
 mlvalue make_block(size_t size, tag_t tag) {
   mlvalue* block = allocate_in_semispace(size+1);
-  block[0] = Make_header(size, WHITE, tag);
+  block[0] = Make_header(size, WHITE, 0, tag);
   return Val_ptr(block+1);
 }
 
 mlvalue make_closure(uint64_t addr, mlvalue env) {
     contextValue = &env;
     mlvalue* block = allocate_in_semispace(3);
-    block[0] = Make_header(2, WHITE, CLOSURE_T);
+    block[0] = Make_header(2, WHITE, 0, CLOSURE_T);
     block[1] = Val_long(addr);
     block[2] = *contextValue;
     contextValue = NULL;
