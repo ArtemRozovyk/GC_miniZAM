@@ -1,7 +1,6 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#define MLVS 8
 #define KB 1024
 #define MB (1024 * KB)
 #define GB (1024 * MB)

@@ -245,7 +245,6 @@ void copy_all_to_space(semi_space from_space, semi_space to_space, int mode){
 
     /* Copie des racines dans stack */
     int i = sp-1;
-    header_t resddrz = Hd_val(Caml_state->stack[0]);
     while (i >= 0) {
         if(Is_block(Caml_state->stack[i]) && est_dans_space(from_space, Caml_state->stack[i]))
         {
@@ -286,7 +285,6 @@ void start_gc(){
     semi_space from_space = Caml_state->space[Caml_state->current_semispace];
     semi_space to_space = Caml_state->space[(Caml_state->current_semispace + 1) %2];
 
-    header_t rerz = Hd_val(Caml_state->stack[0]);
     copy_all_to_space(from_space, to_space, 1);
 
     if(to_space->alloc_pointer*2 >= to_space->capcity)
@@ -295,7 +293,6 @@ void start_gc(){
     }
     else
     {
-        int zzz = (from_space->capcity/1.5 <= Semi_space_min_limit/8);
         from_space->capcity /= (from_space->capcity/1.5 <= Semi_space_min_limit/8) ? 1 : 1.5;
     }
 
@@ -309,7 +306,6 @@ void start_gc(){
         to_space_final = (to_space->capcity/1.5 <= Semi_space_min_limit/8) ? new_semispace(to_space->capcity) : new_semispace(to_space->capcity / 1.5);
     }
     copy_all_to_space(to_space, to_space_final, 0);
-    header_t rersz = Hd_val(Caml_state->stack[0]);
     free_semispace(to_space);
     Caml_state->space[(Caml_state->current_semispace + 1) %2] = to_space_final;
 
