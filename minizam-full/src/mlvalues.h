@@ -22,13 +22,13 @@ typedef enum { ENV_T, CLOSURE_T, BLOCK_T, FWD_PTR_T} tag_t;
 
 /* Structure of the header:
      +--------+-------+-------------+----+
-     | size   | color | deja survie |tag |
+     | size   | color | deja survecu |tag |
      +--------+-------+-------------+----+
 bits  63    10 9     8 7           7 6   0
 */
 #define Size_hd(hd)  ((hd) >> 10)
 #define Color_hd(hd) (((hd) >> 8) & 3)
-#define Survie_hd(hd)   (((hd >> 7)) & 1)
+#define Survecu_hd(hd)   (((hd >> 7)) & 1)
 #define Tag_hd(hd)   ((hd) & 0x7F)
 
 #define Hd_val(v) (((header_t*)(v))[-1])
@@ -37,7 +37,7 @@ bits  63    10 9     8 7           7 6   0
 #define Field1(v) Field(v,1)
 #define Size(v) Size_hd(Hd_val(v))
 #define Color(v) Color_hd(Hd_val(v))
-#define Survie(v) Survie_hd(Hd_val(v))
+#define Survecu(v) Survecu_hd(Hd_val(v))
 #define Tag(v)  Tag_hd(Hd_val(v))
 
 #define WHITE 0

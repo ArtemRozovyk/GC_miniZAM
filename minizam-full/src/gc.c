@@ -22,66 +22,94 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr)
     ml_fifo fifo = new_ml_fifo();
     push_fifo(fifo, &resultat, addr);
     mlvalue* block_to_space = to_space->tas + to_space->alloc_pointer;
-    while (!is_empty_fifo(fifo)) {
+    while (!is_empty_fifo(fifo))
+    {
         context ctx = pop_fifo(fifo);
-        if (Tag(ctx.val) == FWD_PTR_T) {
+        if (Tag(ctx.val) == FWD_PTR_T)
+        {
             mlvalue *place = (mlvalue *) ctx.place;
             *place = Field0(ctx.val);
-        } else {
-            if (Survie(ctx.val)) {
-                int size = (Size(ctx.val) == 0) ? 1 : (Size(ctx.val));
-                mlvalue *block_to_mark = NULL;
-                if (size * sizeof(mlvalue) > Page_size / 2) {
-                    block_to_mark = caml_alloc((size + 1) * sizeof(mlvalue));
-                    Caml_state->big_list = pushHead(block + 1, Caml_state->big_list);
-                    Caml_state->big_list_size++;
-                } else {
+        } else if (Survecu(ctx.val)) {
+            int size = (Size(ctx.val) == 0) ? 1 : (Size(ctx.val));
+            mlvalue *block_to_mark = NULL;
+            if (size * sizeof(mlvalue) > Page_size / 2)
+            {
+                block_to_mark = caml_alloc((size + 1) * sizeof(mlvalue));
+                Caml_state->big_list = pushHead(block + 1, Caml_state->big_list);
+                Caml_state->big_list_size++;
+            }
+            else
+            {
+                block_to_mark = find_first_fit(Caml_state, size);
+                if (!block_to_mark)
+                {
+                    //block of sufficient size wasn't found,new page is needed.
+                    add_new_page(Caml_state);
                     block_to_mark = find_first_fit(Caml_state, size);
-                    if (!block_to_mark) {
-                        //block of sufficient size wasn't found,new page is needed.
-                        add_new_page(Caml_state);
-                        block_to_mark = find_first_fit(Caml_state, size);
-                    }
+                }
                     //block has been found
                     block_to_mark[0] = Hd_val(ctx.val);
-                    for (size_t i = 0; i < Size(ctx.val); i++) {
-                        block_to_mark[i + 1] = Field(ctx.val, i);
-                    }
-
-                    Hd_val(ctx.val) = Make_header(Size(ctx.val), Color(ctx.val), Survie(ctx.val), FWD_PTR_T);
-                    Field0(ctx.val) = Val_ptr(block_to_space + 1);
-                }
-            } else {
-                if (Size(ctx.val) == 0) {
-                    to_space->alloc_pointer += 2;
-                } else {
-                    to_space->alloc_pointer += Size(ctx.val) + 1;
+                for (size_t i = 0; i < Size(ctx.val); i++)
+                {
+                    block_to_mark[i + 1] = Field(ctx.val, i);
                 }
 
-                block_to_space[0] = Make_header(Size(ctx.val), Color(ctx.val), Survie(ctx.val) + 1, Tag(ctx.val));
-                for (size_t i = 0; i < Size(ctx.val); i++) {
-                    block_to_space[i + 1] = Field(ctx.val, i);
-                }
+                Hd_val(ctx.val) = Make_header(Size(ctx.val), Color(ctx.val), Survecu(ctx.val), FWD_PTR_T);
+                Field0(ctx.val) = Val_ptr(block_to_mark + 1);
 
-                Hd_val(ctx.val) = Make_header(Size(ctx.val), Color(ctx.val), Survie(ctx.val), FWD_PTR_T);
-                Field0(ctx.val) = Val_ptr(block_to_space + 1);
-
-                for (size_t i = 0; i < Size(ctx.val); i++) {
-                    if (Is_block(block_to_space[i + 1])) {
-                        push_fifo(fifo, block_to_space + i + 1, block_to_space[i + 1]);
+                for (size_t i = 0; i < Size(ctx.val); i++)
+                {
+                    if (Is_block(block_to_mark[i + 1]) && est_dans_space(from_space, block_to_mark[i + 1]))
+                    {
+                        push_fifo(fifo, block_to_mark + i + 1, block_to_mark[i + 1]);
+                        push_fifo(Caml_state->remembered_set, block_to_mark+i+1, block_to_space[i+1]);
                     }
                 }
 
                 mlvalue *place = (mlvalue *) ctx.place;
+                *place = Val_ptr(block_to_mark + 1);
+            }
+        }
+        else
+        {
+            if (Size(ctx.val) == 0)
+            {
+                to_space->alloc_pointer += 2;
+            }
+            else
+            {
+                to_space->alloc_pointer += Size(ctx.val) + 1;
+            }
+
+            block_to_space[0] = Make_header(Size(ctx.val), Color(ctx.val), Survecu(ctx.val) + 1, Tag(ctx.val));
+            for (size_t i = 0; i < Size(ctx.val); i++)
+            {
+                block_to_space[i + 1] = Field(ctx.val, i);
+            }
+
+            Hd_val(ctx.val) = Make_header(Size(ctx.val), Color(ctx.val), Survecu(ctx.val), FWD_PTR_T);
+            Field0(ctx.val) = Val_ptr(block_to_space + 1);
+
+            for (size_t i = 0; i < Size(ctx.val); i++)
+            {
+                if (Is_block(block_to_space[i + 1]) && est_dans_space(from_space, block_to_space[i + 1]))
+                {
+                    push_fifo(fifo, block_to_space + i + 1, block_to_space[i + 1]);
+                }
+            }
+
+                mlvalue *place = (mlvalue *) ctx.place;
                 *place = Val_ptr(block_to_space + 1);
                 block_to_space = to_space->tas + to_space->alloc_pointer;
-            }
         }
     }
 
     free_fifo(fifo);
     return resultat;
 }
+
+
+
 
 void copy_all_to_space(semi_space from_space, semi_space to_space){
     if(Is_block(accu))
@@ -105,6 +133,16 @@ void copy_all_to_space(semi_space from_space, semi_space to_space){
     if(contextValue){
         if(Is_block(*contextValue)){
             *contextValue = copy_to_space(from_space, to_space, *contextValue);
+        }
+    }
+
+    if(!is_empty_fifo(Caml_state->remembered_set)){
+        ml_fifo_field curr = Caml_state->remembered_set->start;
+        while(curr){
+            mlvalue * place = curr->ctx.place;
+            mlvalue res = copy_to_space(from_space ,to_space, curr->ctx.val);
+            *place = copy_to_space(from_space ,to_space, curr->ctx.val);
+            curr = curr->next;
         }
     }
 }
