@@ -43,12 +43,20 @@ mlvalue caml_interprete(code_t* prog) {
   accu = Val_long(0);
   env = Make_empty_env();
 
+  /*=========================================================*/
+        int tour = 0;
+  /*=========================================================*/
   sp = 0;
   register unsigned int pc = 0;
   unsigned int extra_args = 0;
   unsigned int trap_sp = 0;
   while(1) {
+      /*=========================================================*/
+      tour++;
+      if(tour==4){
 
+      }
+      /*=========================================================*/
 #ifdef DEBUG
       printf("pc=%d  accu=%s  sp=%d extra_args=%d trap_sp=%d stack=[",
              pc, val_to_str(accu), sp, extra_args, trap_sp);

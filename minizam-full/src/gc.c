@@ -11,6 +11,7 @@
 extern mlvalue accu; 
 extern mlvalue env;
 extern unsigned int sp;
+int premiere_copie;
 
 mlvalue * contextValue = NULL;
 
@@ -136,7 +137,7 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr)
             mlvalue *place = (mlvalue *) ctx.place;
             *place = Field0(ctx.val);
         }
-        else if (Survecu(ctx.val))
+        else if (Survecu(ctx.val) && premiere_copie)
         {
             int size = Size(ctx.val) ;
             mlvalue *block_to_mark = NULL;
@@ -223,13 +224,7 @@ void copy_all_to_space(semi_space from_space, semi_space to_space){
         accu = copy_to_space(from_space, to_space, accu);
     }
 
-    printf("pl1\n");
-    ml_list curr2=Caml_state->page_list;
-    while(curr2&&curr2->val){
-        show_pages(curr2->val+1);
-        printf(" |-| \n\n");
-        curr2=curr2->next;
-    }
+
 
     /* Copie de racine dans env */
     env = copy_to_space(from_space, to_space, env);
@@ -250,6 +245,14 @@ void copy_all_to_space(semi_space from_space, semi_space to_space){
         }
     }
 
+    /*printf("pl1\n");
+    ml_list curr2=Caml_state->page_list;
+    while(curr2&&curr2->val){
+        show_pages(curr2->val+1);
+        printf(" |-| \n\n");
+        curr2=curr2->next;
+    }*/
+
     if(!is_empty_fifo(Caml_state->remembered_set)){
         ml_fifo_field curr = Caml_state->remembered_set->start;
         while(curr){
@@ -265,6 +268,7 @@ void start_gc(){
     semi_space from_space = Caml_state->space[Caml_state->current_semispace];
     semi_space to_space = Caml_state->space[(Caml_state->current_semispace + 1) %2];
 
+    premiere_copie = 1;
     copy_all_to_space(from_space, to_space);
 
     if(to_space->alloc_pointer*2 >= to_space->capcity)
@@ -285,6 +289,7 @@ void start_gc(){
     else
         to_space_final = new_semispace(to_space->capcity/1.5);
 
+    premiere_copie = 0;
     copy_all_to_space(to_space, to_space_final);
 
     free_semispace(to_space);
