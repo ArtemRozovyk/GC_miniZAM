@@ -23,8 +23,6 @@ add_executable(GC_miniZAM
         minizam-full/src/primitives.h
         minizam-full/src/gc.c
         minizam-full/src/gc.h
-        minizam-full/src/lists.h
-        minizam-full/src/lists.c
         minizam-full/src/gc.h
         minizam-full/src/fifo.c
-        minizam-full/src/fifo.h)
+        minizam-full/src/fifo.h minizam-full/src/lists.h minizam-full/src/lists.c)

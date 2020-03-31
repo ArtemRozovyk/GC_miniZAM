@@ -26,6 +26,7 @@ typedef struct _caml_domain_state {
   semi_space space[2];
   int current_semispace;
   ml_fifo remembered_set;
+
     /*Big objects*/
     ml_list big_list;
     ulong big_list_size;

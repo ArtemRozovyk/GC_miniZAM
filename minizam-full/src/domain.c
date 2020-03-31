@@ -11,6 +11,7 @@ caml_domain_state* Caml_state;
 
 void caml_init_domain() {
 
+    Caml_state = malloc(sizeof(caml_domain_state));
 
 
     /*
@@ -25,7 +26,6 @@ void caml_init_domain() {
     * mark and sweep
     */
 
-  Caml_state = malloc(sizeof(caml_domain_state));
 
   Caml_state->stack = malloc(Stack_size);
 
