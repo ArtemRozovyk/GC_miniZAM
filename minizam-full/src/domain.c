@@ -5,6 +5,7 @@
 #include "config.h"
 #include "mlvalues.h"
 #include "gc.h"
+#include "lists.h"
 
 caml_domain_state* Caml_state;
 

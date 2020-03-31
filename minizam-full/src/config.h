@@ -1,6 +1,7 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+#define MLVS 8
 #define KB 1024
 #define MB (1024 * KB)
 #define GB (1024 * MB)
@@ -10,7 +11,7 @@
 /* No boundary-checks are done: stack overflow will silently corrupt
    the heap; probably causing something to go wrong somewhere. */
 #define Stack_size (8 * MB)
-#define Semi_space_size (32 * KB)
+#define Semi_space_size (32 * KB /MLVS)
 #define Page_size (64 * KB)
 
 #endif
