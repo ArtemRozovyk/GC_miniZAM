@@ -8,7 +8,7 @@
 #include "mlvalues.h"
 
 typedef struct _context {
-    void* place;
+    mlvalue * place;
     mlvalue val;
 } context;
 
