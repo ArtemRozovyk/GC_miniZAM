@@ -11,7 +11,8 @@
 /* No boundary-checks are done: stack overflow will silently corrupt
    the heap; probably causing something to go wrong somewhere. */
 #define Stack_size (8 * MB)
-#define Semi_space_size (32 * KB  /MLVS)
+#define Semi_space_size (32 * KB)
+#define Semi_space_min_limit (1 * KB)
 #define Page_size (64 * KB)
 
 #endif

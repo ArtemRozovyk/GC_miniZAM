@@ -295,7 +295,8 @@ void start_gc(){
     }
     else
     {
-        from_space->capcity /= 1.5;
+        int zzz = (from_space->capcity/1.5 <= Semi_space_min_limit/8);
+        from_space->capcity /= (from_space->capcity/1.5 <= Semi_space_min_limit/8) ? 1 : 1.5;
     }
 
     Caml_state->space[Caml_state->current_semispace] = new_semispace(from_space->capcity);
@@ -304,9 +305,9 @@ void start_gc(){
     semi_space to_space_final;
     if(to_space->alloc_pointer*2 >= to_space->capcity)
         to_space_final = new_semispace(to_space->capcity*1.5);
-    else
-        to_space_final = new_semispace(to_space->capcity/1.5);
-
+    else {
+        to_space_final = (to_space->capcity/1.5 <= Semi_space_min_limit/8) ? new_semispace(to_space->capcity) : new_semispace(to_space->capcity / 1.5);
+    }
     copy_all_to_space(to_space, to_space_final, 0);
     header_t rersz = Hd_val(Caml_state->stack[0]);
     free_semispace(to_space);
