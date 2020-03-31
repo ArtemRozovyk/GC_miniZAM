@@ -17,6 +17,9 @@ typedef struct _caml_domain_state {
   /* Stack */
   mlvalue* stack;
   /*Big objects*/
+  //size in mlvalues
+  ulong curr_page_space_size;
+  ulong old_page_space_size;
   ml_list big_list;
   ulong big_list_size;
   ml_list page_list;

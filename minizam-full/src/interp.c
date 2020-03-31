@@ -18,15 +18,17 @@
 #define POP_STACK() stack[--sp]
 #define PUSH_STACK(x) stack[sp++] = x
 
-
-
+mlvalue * stack ;
+mlvalue accu;
+mlvalue env;
+unsigned int sp;
 mlvalue caml_interprete(code_t* prog) {
 
-  mlvalue* stack = Caml_state->stack;
-  mlvalue accu = Val_long(0);
-  mlvalue env = Make_empty_env();
 
-  register unsigned int sp = 0;
+    stack = Caml_state->stack;
+   accu = Val_long(0);
+   env = Make_empty_env();
+   sp = 0;
   register unsigned int pc = 0;
   unsigned int extra_args = 0;
   unsigned int trap_sp = 0;
@@ -34,13 +36,20 @@ mlvalue caml_interprete(code_t* prog) {
     long insttuction=0;
   while(1) {
     insttuction++;
-      if(insttuction%40==0){
+
+      if(Caml_state->curr_page_space_size>=1.5* Caml_state->old_page_space_size){
           mark(stack,sp,accu,env);
           //printf("\n");
           //show_colors(Caml_state->big_list);
           //
-
+          //printf("---\n");
+          //printf("Size allocated = %lu\n",Caml_state->curr_page_space_size);
+          //printf("Running gc()\n");
           gc();
+          //printf("Size allocated = %lu\n",Caml_state->curr_page_space_size);
+          //printf("---\n");
+          Caml_state->old_page_space_size=Caml_state->curr_page_space_size;
+
 /*
             printf("pl1\n");
             ml_list curr2=Caml_state->page_list;
@@ -78,6 +87,7 @@ mlvalue caml_interprete(code_t* prog) {
           //printf(" nl \n");
           //show_colors(Caml_state->big_list);
           done=1;
+
       }
 #ifdef DEBUG
       printf("pc=%d  accu=%s  sp=%d extra_args=%d trap_sp=%d stack=[",
@@ -348,7 +358,9 @@ mlvalue caml_interprete(code_t* prog) {
 
     case RAISE: {
       if (trap_sp == 0) {
-        fprintf(stderr, "Uncaught exception: %s\n", val_to_str(accu));
+          char * raised = val_to_str(accu);
+        fprintf(stderr, "Uncaught exception: %s\n", raised);
+        free(raised);
         exit(EXIT_FAILURE);
       } else {
         sp = trap_sp;
@@ -361,8 +373,7 @@ mlvalue caml_interprete(code_t* prog) {
     }
 
     case STOP:
-            release(Caml_state->free_list);
-            free(Caml_state->free_list);
+
             //printf("\n");
             //show_colors(Caml_state->big_list);
             //Caml_state->big_list=sweep(Caml_state->big_list);

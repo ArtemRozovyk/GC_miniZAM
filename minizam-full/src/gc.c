@@ -129,8 +129,6 @@ void show_page(mlvalue *page) {
 }
 
 ml_list sweep_pages(ml_list pages) {
-
-
     //pages->val contains adress of first case of a page
     ml_list curr = pages;
     while (curr && curr->val) {
@@ -182,7 +180,7 @@ ml_list sweep_pages(ml_list pages) {
                     curr = curr->next;
                     break;
                 }
-
+                Caml_state->curr_page_space_size-=block_sz;
             }
             if (Tag(Val_ptr(block)) == PAGE_T) {
                 curr = curr->next;
@@ -197,6 +195,7 @@ ml_list sweep_pages(ml_list pages) {
 
     return pages;
 }
+
 
 bool contains(ml_list pMll, mlvalue *pInt) {
     while (pMll && pMll->val) {
@@ -231,6 +230,7 @@ ml_list sweep(ml_list lst) {
         ml_list tofree = lst;
         lst = lst->next;
         free((mlvalue *) tofree->val - 1);
+        Caml_state->curr_page_space_size-=Size(tofree->val);
 
         free(tofree);
     }
@@ -243,6 +243,7 @@ ml_list sweep(ml_list lst) {
                 ml_list tofree = pred->next;
                 pred->next = pred->next->next;
                 free((mlvalue *) tofree->val - 1);
+                Caml_state->curr_page_space_size-=Size(tofree->val);
                 free(tofree);
             }
             pred = pred->next;
@@ -271,7 +272,7 @@ ml_list free_empty_pages(ml_list lst) {
     while (lst != NULL && (Size(lst->val+1) == Page_size / sizeof(mlvalue))) {
         ml_list tofree = lst;
         lst = lst->next;
-        free((mlvalue *) tofree->val - 1);
+        free((mlvalue *) tofree->val );
         free(tofree);
     }
     ml_list pred = lst;
@@ -280,11 +281,28 @@ ml_list free_empty_pages(ml_list lst) {
             if (Size(pred->next->val+1) == Page_size / sizeof(mlvalue)) {
                 ml_list tofree = pred->next;
                 pred->next = pred->next->next;
-                free( tofree->val - 1);
+                free( tofree->val );
                 free(tofree);
             }
             pred = pred->next;
         }
     }
     return lst;
+}
+
+
+void clear_state(){
+    sweep(Caml_state->big_list);
+    sweep_pages(Caml_state->page_list);
+    ml_list curr_page = Caml_state->page_list;
+    while (curr_page&&curr_page->val){
+        free(curr_page->val);
+        curr_page=curr_page->next;
+    }
+    release(Caml_state->free_list);
+    release(Caml_state->page_list);
+    release(Caml_state->big_list);
+    free(Caml_state->free_list);
+    free(Caml_state->page_list);
+    free(Caml_state->big_list);
 }

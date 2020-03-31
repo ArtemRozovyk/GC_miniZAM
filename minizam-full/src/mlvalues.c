@@ -47,6 +47,7 @@ mlvalue make_block(size_t size, tag_t tag) {
         block[0] = Make_header(size, WHITE, tag);
         Caml_state->big_list = pushHead(block + 1, Caml_state->big_list);
         Caml_state->big_list_size++;
+        Caml_state->curr_page_space_size+=size+1;
         return Val_ptr(block + 1);
     }
     if (Caml_state->free_list_sz == 0) {
@@ -61,6 +62,7 @@ mlvalue make_block(size_t size, tag_t tag) {
     }
     //block has been found
     free_block[0] = Make_header(size, WHITE, tag);
+    //printf("Size allocated = %lu\n",Caml_state->curr_page_space_size);
     return Val_ptr(free_block + 1);
 }
 
@@ -71,6 +73,7 @@ mlvalue *find_first_fit(caml_domain_state *pState, size_t size) {
         size_t bloc_size= Size(current_fl_chain->val);
         mlvalue * block = current_fl_chain->val;
         if(Tag(Val_ptr(block))==PAGE_T && bloc_size > size){
+            Caml_state->curr_page_space_size+=size+1;
             Field(block, size) =
                     Make_header(bloc_size - (size + 1), RED, PAGE_T);
             current_fl_chain->val=current_fl_chain->val+size+1;
@@ -78,6 +81,8 @@ mlvalue *find_first_fit(caml_domain_state *pState, size_t size) {
         }
 
         if(Tag(Val_ptr(block))==INTERN_PAGE_T){
+            Caml_state->curr_page_space_size+=size+1;
+
             if(bloc_size==size){
                 //remove from list and give up the pointer
                 pState->free_list=remove_value_from_list(block,pState->free_list);
@@ -89,6 +94,7 @@ mlvalue *find_first_fit(caml_domain_state *pState, size_t size) {
                 Field(block, size) =
                         Make_header(bloc_size - (size + 1), RED, INTERN_PAGE_T);
                 current_fl_chain->val=current_fl_chain->val+size+1;
+
                 return block-1;
             }
         }
@@ -180,6 +186,7 @@ char *block_content_to_str(mlvalue block) {
         buff_ptr += lengths[i];
         *buff_ptr++ = ',';
     }
+    free(content);
     buff_ptr--; // To allow the last ',' to be removed
     *buff_ptr = '\0';
     return buffer;

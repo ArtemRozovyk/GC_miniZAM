@@ -7,6 +7,7 @@
 #include "mlvalues.h"
 #include "parser.h"
 #include "interp.h"
+#include "gc.h"
 
 /* Note that Caml_state is allocated by caml_init_domain but never
    freed. You might therefore not want to repeatedly call
@@ -34,4 +35,7 @@ int main(int argc, char** argv) {
     printf("%s\n", res_str);
     free(res_str);
   }
+
+
+  clear_state();
 }
