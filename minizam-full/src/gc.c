@@ -180,7 +180,7 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr,
                 if (Is_block(block_to_mark[i + 1]) && est_dans_space(from_space, block_to_mark[i + 1]))
                 {
                     push_fifo(fifo, block_to_mark + i + 1, block_to_mark[i + 1]);
-                    push_fifo(Caml_state->remembered_set, block_to_mark+i+1, block_to_space[i+1]);
+                    push_fifo(Caml_state->remembered_set, block_to_mark+i+1, block_to_mark[i+1]);
                 }
             }
             mlvalue *place = (mlvalue *) ctx.place;
@@ -271,7 +271,10 @@ void copy_all_to_space(semi_space from_space, semi_space to_space, int mode){
     if(!is_empty_fifo(Caml_state->remembered_set)){
         ml_fifo_field curr = Caml_state->remembered_set->start;
         while(curr){
-            curr->ctx.place = Ptr_val(copy_to_space(from_space ,to_space, curr->ctx.val, mode));
+            mlvalue * place = curr->ctx.place;
+            mlvalue res =  copy_to_space(from_space ,to_space, curr->ctx.val, mode);
+            *place = res;
+            curr->ctx.val = res;
             curr = curr->next;
         }
     }
