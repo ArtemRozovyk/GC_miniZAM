@@ -29,8 +29,8 @@ void caml_init_domain() {
 
   Caml_state->stack = malloc(Stack_size);
 
-  Caml_state->space[0] = new_semispace(Semi_space_size/8);
-  Caml_state->space[1] = new_semispace(Semi_space_size/8);
+  Caml_state->space[0] = new_semispace(Semi_space_size);
+  Caml_state->space[1] = new_semispace(Semi_space_size);
   Caml_state->current_semispace=0;
 
   Caml_state->remembered_set = new_ml_fifo();

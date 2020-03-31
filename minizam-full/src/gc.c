@@ -199,14 +199,14 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr,
             }
             int survecu = mode ? Survecu(ctx.val) + 1 : Survecu(ctx.val);
             block_to_space[0] = Val_hd(Make_header(Size(ctx.val), Color(ctx.val), survecu, Tag(ctx.val)));
-            header_t heerr = Hd_val(block_to_space +1 );
+
             for (size_t i = 0; i < Size(ctx.val); i++)
             {
                 block_to_space[i + 1] = Field(ctx.val, i);
             }
 
             Hd_val(ctx.val) = Make_header(Size(ctx.val), Color(ctx.val), Survecu(ctx.val), FWD_PTR_T);
-            header_t rere = Hd_val(ctx.val);
+
             Field0(ctx.val) = Val_ptr(block_to_space + 1);
 
             for (size_t i = 0; i < Size(ctx.val); i++)
