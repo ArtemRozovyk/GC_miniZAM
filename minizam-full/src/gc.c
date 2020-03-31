@@ -123,6 +123,34 @@ void show_pages(mlvalue *page) {
     printf("]");
 }
 
+uint64_t old_size = 100 * KB;
+uint64_t curr_size = 0;
+
+mlvalue * allocate_in_free_list(size_t size) {
+    mlvalue *block_to_mark = NULL;
+    /*if ((curr_size + size + 1) * 1.5 < old_size)
+    {*/
+        if (size * sizeof(mlvalue) > Page_size / 2) {
+            block_to_mark = caml_alloc((size + 1) * sizeof(mlvalue));
+            Caml_state->big_list = pushHead(block_to_mark + 1, Caml_state->big_list);
+            Caml_state->big_list_size++;
+        } else {
+            block_to_mark = find_first_fit(Caml_state, size);
+            if (!block_to_mark) {
+                //block of sufficient size wasn't found,new page is needed.
+                add_new_page(Caml_state);
+                block_to_mark = find_first_fit(Caml_state, size);
+            }
+        }
+        return  block_to_mark;
+    /*}
+    else
+    {
+        //TODO: GC
+        //Comment obtenir la nouvelle courent size?
+    }*/
+}
+
 
 mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr){
     mlvalue resultat;
@@ -139,25 +167,7 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr)
         }
         else if (Survecu(ctx.val) && premiere_copie)
         {
-            int size = Size(ctx.val) ;
-            mlvalue *block_to_mark = NULL;
-            if (size * sizeof(mlvalue) > Page_size / 2)
-            {
-                block_to_mark = caml_alloc((size + 1) * sizeof(mlvalue));
-                Caml_state->big_list = pushHead(block_to_mark + 1, Caml_state->big_list);
-                Caml_state->big_list_size++;
-            }
-            else
-            {
-                block_to_mark = find_first_fit(Caml_state, size);
-                if (!block_to_mark)
-                {
-                    //block of sufficient size wasn't found,new page is needed.
-                    add_new_page(Caml_state);
-                    block_to_mark = find_first_fit(Caml_state, size);
-                }
-            }
-            //block has been found
+            mlvalue *block_to_mark = allocate_in_free_list(Size(ctx.val) );
             block_to_mark[0] = Hd_val(ctx.val);
             for (size_t i = 0; i < Size(ctx.val); i++)
             {
