@@ -11,7 +11,6 @@
 extern mlvalue accu; 
 extern mlvalue env;
 extern unsigned int sp;
-int premiere_copie;
 
 mlvalue * contextValue = NULL;
 
@@ -152,7 +151,7 @@ mlvalue * allocate_in_free_list(size_t size) {
 }
 
 
-mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr){
+mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr, int mode){
     mlvalue resultat;
     ml_fifo fifo = new_ml_fifo();
     push_fifo(fifo, &resultat, addr);
@@ -165,7 +164,7 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr)
             mlvalue *place = (mlvalue *) ctx.place;
             *place = Field0(ctx.val);
         }
-        else if (Survecu(ctx.val) && premiere_copie)
+        else if (Survecu(ctx.val) && mode)
         {
             mlvalue *block_to_mark = allocate_in_free_list(Size(ctx.val) );
             block_to_mark[0] = Hd_val(ctx.val);
@@ -189,6 +188,7 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr)
         }
         else
         {
+            header_t  te = Hd_val(ctx.val);
             if (Size(ctx.val) == 0)
             {
                 to_space->alloc_pointer += 2;
@@ -197,14 +197,16 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr)
             {
                 to_space->alloc_pointer += Size(ctx.val) + 1;
             }
-
-            block_to_space[0] = Make_header(Size(ctx.val), Color(ctx.val), Survecu(ctx.val) + 1, Tag(ctx.val));
+            int survecu = mode ? Survecu(ctx.val) + 1 : Survecu(ctx.val);
+            block_to_space[0] = Val_hd(Make_header(Size(ctx.val), Color(ctx.val), survecu, Tag(ctx.val)));
+            header_t heerr = Hd_val(block_to_space +1 );
             for (size_t i = 0; i < Size(ctx.val); i++)
             {
                 block_to_space[i + 1] = Field(ctx.val, i);
             }
 
             Hd_val(ctx.val) = Make_header(Size(ctx.val), Color(ctx.val), Survecu(ctx.val), FWD_PTR_T);
+            header_t rere = Hd_val(ctx.val);
             Field0(ctx.val) = Val_ptr(block_to_space + 1);
 
             for (size_t i = 0; i < Size(ctx.val); i++)
@@ -228,30 +230,33 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr)
 
 
 
-void copy_all_to_space(semi_space from_space, semi_space to_space){
-    if(Is_block(accu))
+void copy_all_to_space(semi_space from_space, semi_space to_space, int mode){
+
+    if(Is_block(accu) && est_dans_space(from_space, accu))
     {
-        accu = copy_to_space(from_space, to_space, accu);
+        accu = copy_to_space(from_space, to_space, accu, mode);
     }
 
 
 
     /* Copie de racine dans env */
-    env = copy_to_space(from_space, to_space, env);
+    if(est_dans_space(from_space, env))
+        env = copy_to_space(from_space, to_space, env, mode);
 
     /* Copie des racines dans stack */
     int i = sp-1;
+    header_t resddrz = Hd_val(Caml_state->stack[0]);
     while (i >= 0) {
-        if(Is_block(Caml_state->stack[i]))
+        if(Is_block(Caml_state->stack[i]) && est_dans_space(from_space, Caml_state->stack[i]))
         {
-            Caml_state->stack[i] = copy_to_space(from_space, to_space, Caml_state->stack[i]);
+            Caml_state->stack[i] = copy_to_space(from_space, to_space, Caml_state->stack[i], mode);
         }
         i--;
     }
 
     if(contextValue){
-        if(Is_block(*contextValue)){
-            *contextValue = copy_to_space(from_space, to_space, *contextValue);
+        if(Is_block(*contextValue) && contextValue){
+            *contextValue = copy_to_space(from_space, to_space, *contextValue, mode);
         }
     }
 
@@ -266,20 +271,20 @@ void copy_all_to_space(semi_space from_space, semi_space to_space){
     if(!is_empty_fifo(Caml_state->remembered_set)){
         ml_fifo_field curr = Caml_state->remembered_set->start;
         while(curr){
-            mlvalue * place = curr->ctx.place;
-            mlvalue res = copy_to_space(from_space ,to_space, curr->ctx.val);
-            *place = copy_to_space(from_space ,to_space, curr->ctx.val);
+            curr->ctx.place = Ptr_val(copy_to_space(from_space ,to_space, curr->ctx.val, mode));
             curr = curr->next;
         }
     }
+
+
 }
 
 void start_gc(){
     semi_space from_space = Caml_state->space[Caml_state->current_semispace];
     semi_space to_space = Caml_state->space[(Caml_state->current_semispace + 1) %2];
 
-    premiere_copie = 1;
-    copy_all_to_space(from_space, to_space);
+    header_t rerz = Hd_val(Caml_state->stack[0]);
+    copy_all_to_space(from_space, to_space, 1);
 
     if(to_space->alloc_pointer*2 >= to_space->capcity)
     {
@@ -299,9 +304,8 @@ void start_gc(){
     else
         to_space_final = new_semispace(to_space->capcity/1.5);
 
-    premiere_copie = 0;
-    copy_all_to_space(to_space, to_space_final);
-
+    copy_all_to_space(to_space, to_space_final, 0);
+    header_t rersz = Hd_val(Caml_state->stack[0]);
     free_semispace(to_space);
     Caml_state->space[(Caml_state->current_semispace + 1) %2] = to_space_final;
 
