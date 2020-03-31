@@ -6,8 +6,8 @@
 
 typedef int64_t mlvalue;
 typedef uint64_t header_t;
-typedef enum { WHITE, GRAY, BLACK } color_t;
-typedef enum { ENV_T, CLOSURE_T, BLOCK_T, FWD_PTR_T} tag_t;
+typedef enum { WHITE, GRAY, BLACK, RED } color_t;
+typedef enum { ENV_T, CLOSURE_T, BLOCK_T , PAGE_T, INTERN_PAGE_T, FWD_PTR_T } tag_t;
 
 /* If a mlvalue ends with 1, it's an integer, otherwise it's a pointer. */
 #define Is_long(v)  (((v) & 1) != 0)
@@ -43,8 +43,11 @@ bits  63    10 9     8 7           7 6   0
 #define WHITE 0
 #define GRAY 1
 #define BLACK 2
+#define RED 3
+
 #define Make_header(size,color,survie,tag)                                     \
   ((header_t)(((size) << 10) | (((color) & 3) << 8) | (((survie) & 1) << 7) | ((tag) & 0x7F)))
+#define Set_Color(v,c) (Hd_val(v) = ((Hd_val(v) & 0xFFFFFFFFFFFFFCFF) | (c << 8)) )
 
 #define Addr_closure(c) Long_val(Field0(c))
 #define Env_closure(c)  Field1(c)

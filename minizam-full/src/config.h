@@ -11,5 +11,6 @@
    the heap; probably causing something to go wrong somewhere. */
 #define Stack_size (8 * MB)
 #define Semi_space_size (32 * KB)
+#define Page_size (64 * KB)
 
 #endif

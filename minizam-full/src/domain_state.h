@@ -3,6 +3,15 @@
 
 #include "mlvalues.h"
 #include "fifo.h"
+#include "lists.h"
+
+typedef struct pg {
+    mlvalue * blocks;
+    mlvalue current_block;
+    ulong capacity;
+    ulong size;
+
+} * page;
 
 typedef struct _semi_space{
     mlvalue* tas;
@@ -17,6 +26,12 @@ typedef struct _caml_domain_state {
   semi_space space[2];
   int current_semispace;
   ml_fifo remembered_set;
+    /*Big objects*/
+    ml_list big_list;
+    ulong big_list_size;
+    ml_list page_list;
+    ml_list free_list;
+    ulong free_list_sz;
 } caml_domain_state;
 
 /* The global state */

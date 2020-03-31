@@ -10,6 +10,20 @@ caml_domain_state* Caml_state;
 
 void caml_init_domain() {
 
+
+
+    /*
+     * mark and sweep
+     */
+    Caml_state->big_list=ml_empty_list();
+    Caml_state->big_list_size=0;
+    Caml_state->free_list=ml_empty_list();
+    Caml_state->free_list_sz=0;
+    Caml_state->page_list=ml_empty_list();
+    /*
+    * mark and sweep
+    */
+
   Caml_state = malloc(sizeof(caml_domain_state));
 
   Caml_state->stack = malloc(Stack_size);

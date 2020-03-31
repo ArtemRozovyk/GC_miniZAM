@@ -5,6 +5,8 @@
 #include "fifo.h"
 #include "domain_state.h"
 #include "alloc.h"
+#include "lists.h"
+#include "config.h"
 
 extern mlvalue accu; 
 extern mlvalue env;
@@ -13,9 +15,113 @@ extern unsigned int sp;
 mlvalue * contextValue = NULL;
 
 
+void show_pages(mlvalue *page);
+
 int est_dans_space(semi_space space, mlvalue addr){
     return (space->tas <= Ptr_val(addr)) && (Ptr_val(addr) < space->tas + space->capcity);
 }
+
+void add_new_page(caml_domain_state *c_s) {
+    mlvalue *page = malloc(sizeof(mlvalue) * (Page_size / sizeof(mlvalue) + 1));
+    page[0] = Make_header(Page_size / sizeof(mlvalue), RED,0, PAGE_T);
+    long l = page[0];
+
+    Caml_state->page_list = pushHead(Ptr_val(page), Caml_state->page_list);
+    c_s->free_list = pushHead(Ptr_val(page + 1), c_s->free_list);
+    c_s->free_list_sz += 1;
+}
+
+mlvalue *find_first_fit(caml_domain_state *pState, size_t size) {
+    ml_list current_fl_chain = pState->free_list;
+    while (current_fl_chain && current_fl_chain->val) {
+        size_t bloc_size= Size(current_fl_chain->val);
+        mlvalue * block = current_fl_chain->val;
+        if(Tag(Val_ptr(block))==PAGE_T && bloc_size > size){
+            Field(block, size) =
+                    Make_header(bloc_size - (size + 1), RED,0, PAGE_T);
+            current_fl_chain->val=current_fl_chain->val+size+1;
+            return block-1;
+        }
+        if(Tag(Val_ptr(block))==INTERN_PAGE_T){
+            if(bloc_size==size){
+                //remove from list and give up the pointer
+                pState->free_list=remove_value_from_list(block,pState->free_list);
+                pState->free_list_sz--;
+                return block-1;
+            }
+            if(bloc_size > size && bloc_size-size>=2){
+                //we need to have a place for the next header
+                Field(block, size) =
+                        Make_header(bloc_size - (size + 1), RED, 0, INTERN_PAGE_T);
+                current_fl_chain->val=current_fl_chain->val+size+1;
+                return block-1;
+            }
+        }
+
+        current_fl_chain=current_fl_chain->next;
+    }
+    return NULL;
+}
+
+void show_pages(mlvalue *page) {
+    //start with adress of first block
+    printf(" [ ");
+    int i = 1;
+    do {
+
+
+        char *tag = NULL;
+        char *color = NULL;
+
+
+        switch (Tag(Val_ptr(page))) {
+            case ENV_T:
+                tag = "ENV_T";
+                break;
+            case CLOSURE_T:
+                tag = "CLOSURE_T";
+                break;
+            case BLOCK_T:
+                tag = "BLOCK_T";
+                break;
+            case PAGE_T:
+                tag = "PAGE_T";
+                break;
+            case
+                INTERN_PAGE_T:
+                tag = "INTERN_PAGE_T";
+                break;
+        }
+
+
+        switch (Color(Val_ptr(page))) {
+            case WHITE:
+                color = "WHITE";
+                break;
+            case GRAY:
+                color = "GRAY";
+                break;
+            case BLACK:
+                color = "BLACK";
+                break;
+            case RED:
+                color = "RED";
+                break;
+        }
+        if (i % 9 == 0) {
+            printf("\n");
+        }
+        printf("( %s,%s,%p,%lu )", tag, color, page, Size(Val_ptr(page)));
+        i++;
+        if (Tag(Val_ptr(page)) == PAGE_T) {
+            break;
+        }
+        page = page + (Size(Val_ptr(page)) + 1);
+    } while (1);
+
+    printf("]");
+}
+
 
 mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr){
     mlvalue resultat;
@@ -30,12 +136,12 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr)
             mlvalue *place = (mlvalue *) ctx.place;
             *place = Field0(ctx.val);
         } else if (Survecu(ctx.val)) {
-            int size = (Size(ctx.val) == 0) ? 1 : (Size(ctx.val));
+            int size = (Size(ctx.val) == 0) ;
             mlvalue *block_to_mark = NULL;
             if (size * sizeof(mlvalue) > Page_size / 2)
             {
                 block_to_mark = caml_alloc((size + 1) * sizeof(mlvalue));
-                Caml_state->big_list = pushHead(block + 1, Caml_state->big_list);
+                Caml_state->big_list = pushHead(block_to_mark + 1, Caml_state->big_list);
                 Caml_state->big_list_size++;
             }
             else
@@ -65,7 +171,6 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr)
                         push_fifo(Caml_state->remembered_set, block_to_mark+i+1, block_to_space[i+1]);
                     }
                 }
-
                 mlvalue *place = (mlvalue *) ctx.place;
                 *place = Val_ptr(block_to_mark + 1);
             }
