@@ -136,9 +136,9 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr)
             mlvalue *place = (mlvalue *) ctx.place;
             *place = Field0(ctx.val);
         }
-       /* else if (Survecu(ctx.val))
+        else if (Survecu(ctx.val))
         {
-            int size = (Size(ctx.val) == 0) ;
+            int size = Size(ctx.val) ;
             mlvalue *block_to_mark = NULL;
             if (size * sizeof(mlvalue) > Page_size / 2)
             {
@@ -175,7 +175,7 @@ mlvalue copy_to_space(semi_space  from_space, semi_space to_space, mlvalue addr)
             }
             mlvalue *place = (mlvalue *) ctx.place;
             *place = Val_ptr(block_to_mark + 1);
-        }*/
+        }
         else
         {
             if (Size(ctx.val) == 0)
@@ -221,6 +221,14 @@ void copy_all_to_space(semi_space from_space, semi_space to_space){
     if(Is_block(accu))
     {
         accu = copy_to_space(from_space, to_space, accu);
+    }
+
+    printf("pl1\n");
+    ml_list curr2=Caml_state->page_list;
+    while(curr2&&curr2->val){
+        show_pages(curr2->val+1);
+        printf(" |-| \n\n");
+        curr2=curr2->next;
     }
 
     /* Copie de racine dans env */
